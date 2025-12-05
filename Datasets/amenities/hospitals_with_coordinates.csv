@@ -1,0 +1,25 @@
+hospital_name,address,postal_code,hospital_type,latitude,longitude,town
+Crawfurd Hospital,"19 Adam Road, Singapore 289891",289891,Private,1.3268124,103.8133282,Bukit Timah
+Farrer Park Hospital,"1 Farrer Park Station Road, #02-01 Connexion, Singapore 217562",217562,Private,1.312582,103.853915,Farrer Park
+Gleneagles Hospital,"6A Napier Road, Singapore 258500",258500,Private,1.3073782,103.8198608,Tanglin
+Mount Alvernia Hospital,"820 Thomson Road, Singapore 574623",574623,Private,1.3416368,103.8372638,Marymount
+Mount Elizabeth Hospital,"3 Mount Elizabeth, Mount Elizabeth Hospital, Singapore 228510",228510,Private,1.3052551,103.8354896,Orchard
+Mount Elizabeth Novena Hospital,"38 Irrawaddy Road, Singapore 329563",329563,Private,1.322236,103.8440388,Novena
+Parkway East Hospital,"321 Joo Chiat Pl, Singapore 427990",427990,Private,1.3151254,103.9088708,Joo Chiat
+Raffles Hospital,"585 North Bridge Road, Singapore 188770",188770,Private,1.3011894,103.8572771,Bugis
+Thomson Medical Centre,"339 Thomson Road, Singapore 307677",307677,Private,1.3254629,103.8414575,Novena
+West Point Hospital,"235 Corporation Dr, Singapore 619771",619771,Private,1.3309984,103.7229043,Lakeside
+Alexandra Hospital,"378 Alexandra Road, Singapore 159964",159964,Public,1.2876758,103.8014857,Queenstown
+Bright Vision Hospital,"5 Lor Napiri, Singapore 547530",547530,Public,1.3720557,103.8780438,Hougang
+Changi General Hospital,"2 Simel Street 3, Singapore 529889",529889,Public,1.340711,103.949352,Simei
+Institute of Mental Health,"Buangkok Green Medical Park, 10 Buangkok View, Singapore 539747",539747,Public,1.3824524,103.8855753,Buangkok
+Jurong Community Hospital,"1 Jurong East Street 21, Singapore 609606",609606,Public,1.3337719,103.7454999,Jurong East
+Khoo Teck Puat Hospital,"90 Yishun Central, Singapore 768828",768828,Public,1.4242972,103.8385907,Yishun
+KK Women's and Children's Hospital,"100 Bukit Timah Road, Singapore 229899",229899,Public,1.3107426,103.8468021,Rochor
+National University Hospital,"5 Lower Kent Ridge Road, Singapore 119074",119074,Public,1.2946909,103.7832309,Kent Ridge
+Ng Teng Fong General Hospital,"1 Jurong East Street 21, Singapore 609606",609606,Public,1.3337719,103.7454999,Jurong East
+Singapore General Hospital,"Outram Road, Singapore 169608",169608,Public,1.2833414,103.8359684,Outram Park
+Tan Tock Seng Hospital,"11 Jalan Tan Tock Seng, Singapore 308433",308433,Public,1.3210806,103.8456848,Novena
+Yishun Community Hospital,"2 Yishun Central 2, Singapore 768024",768024,Public,1.4240983,103.8374077,Yishun
+Sengkang General Hospital,"110 Sengkang East Way, Singapore 544886",544886,Public,1.3954,103.8934,Sengkang
+Woodlands Health Campus,"17 Woodlands Dr 17, Singapore 737628",737628,Public,1.42456,103.7946,Woodlands
