@@ -19,6 +19,9 @@ Propwise aims to (Insert objectives)
 ## Data Pipeline Workflow
 ### Datasets
 (Link to datasets and introduction of them)
+HDB Price Range Dataset [https://data.gov.sg/datasets?query=HDB+price&resultId=177](url)
+- Price Range of BTO across the different financial year and town
+- Initial Features: Financial year, Town, Room Type, Min Selling Price, Max Selling Price 
 
 ## Machine Learning Model
 
