@@ -1,0 +1,33 @@
+USE WAREHOUSE GROUP4_ASG2;
+USE DATABASE Group4_Asg2;
+
+-- Cleaning HDB_Price_Range - Lv
+--   Create Table for Cleaning in Cleaned Data Schema
+CREATE OR REPLACE TABLE CLEANED_DATA.HDB_Price_Range AS
+SELECT * FROM RAW_DATA.HDB_Price_Range;
+
+--   Drop Irrelevant Columns
+ALTER TABLE CLEANED_DATA.HDB_PRICE_RANGE
+DROP COLUMN MIN_SELLING_PRICE_LESS_AHG_SHG, MAX_SELLING_PRICE_LESS_AHG_SHG;
+
+--   Change Data Types to more suitable ones
+DELETE FROM CLEANED_DATA.HDB_PRICE_RANGE
+WHERE REGEXP_LIKE(MIN_SELLING_PRICE, '^-+$')
+   OR REGEXP_LIKE(MAX_SELLING_PRICE, '^-+$');
+--   5 rows were deleted
+
+CREATE OR REPLACE TABLE CLEANED_DATA.HDB_PRICE_RANGE AS
+SELECT
+    financial_year,
+    town,
+    room_type,
+    TRY_TO_NUMBER(MIN_SELLING_PRICE) AS min_selling_price,
+    TRY_TO_NUMBER(MAX_SELLING_PRICE) AS max_selling_price,
+FROM CLEANED_DATA.HDB_PRICE_RANGE;
+
+
+
+
+
+
+
