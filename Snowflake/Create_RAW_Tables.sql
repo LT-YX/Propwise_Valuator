@@ -26,4 +26,37 @@ FILE_FORMAT = (TYPE = CSV FIELD_OPTIONALLY_ENCLOSED_BY='"' SKIP_HEADER=1)
 ON_ERROR = 'CONTINUE';
 
 -- 
+-- The following part is done by Antozesslyn
+-- Create Raw Table for ALL Resale Price Data
+-- All columns are initially set to STRING to prevent load errors
+CREATE OR REPLACE TABLE RAW_DATA.Resale_Flat_Prices (
+    month STRING,
+    town STRING,
+    flat_type STRING,
+    block STRING,
+    street_name STRING,
+    storey_range STRING,
+    floor_area_sqm STRING,
+    flat_model STRING,
+    lease_commence_date STRING,
+    remaining_lease STRING,
+    resale_price STRING
+);
+
+-- Load data from 2015 to 2016 file
+COPY INTO RAW_DATA.Resale_Flat_Prices
+FROM @stage_raw/ResaleFlatPricesBasedonRegistrationDateFromJan2015toDec2016.csv
+FILE_FORMAT = (TYPE = CSV FIELD_OPTIONALLY_ENCLOSED_BY='"' SKIP_HEADER=1)
+ON_ERROR = 'CONTINUE';
+
+-- Load data from 2017 onwards file
+COPY INTO RAW_DATA.Resale_Flat_Prices
+FROM @stage_raw/ResaleflatpricesbasedonregistrationdatefromJan2017onwards.csv
+FILE_FORMAT = (TYPE = CSV FIELD_OPTIONALLY_ENCLOSED_BY='"' SKIP_HEADER=1)
+ON_ERROR = 'CONTINUE';
+
+-- Check the total number of records loaded to double check
+SELECT COUNT(*) FROM RAW_DATA.Resale_Flat_Prices;
+
+--
 
