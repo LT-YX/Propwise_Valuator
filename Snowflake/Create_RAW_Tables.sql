@@ -60,3 +60,23 @@ SELECT COUNT(*) FROM RAW_DATA.Resale_Flat_Prices;
 
 --
 
+-- The below is done by Joely
+-- 1. Create Raw Table with VARIANT column for GeoJSON
+-- VARIANT data type handles semi-structured data like GeoJSON
+CREATE OR REPLACE TABLE RAW_DATA.HDB_Existing_Building (
+    raw_data VARIANT
+);
+
+-- 2. Load GeoJSON file from stage
+-- Use STRIP_OUTER_ARRAY=TRUE to parse each feature as a separate row
+COPY INTO RAW_DATA.HDB_Existing_Building
+FROM @stage_raw/HDBExistingBuilding.geojson
+FILE_FORMAT = (
+    TYPE = JSON
+    STRIP_OUTER_ARRAY = TRUE
+)
+ON_ERROR = 'CONTINUE';
+
+-- 3. Verify the load
+SELECT raw_data FROM RAW_DATA.HDB_Existing_Building LIMIT 5;
+
