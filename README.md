@@ -55,12 +55,12 @@ Public Gym Location Dataset [https://data.gov.sg/datasets/d_b3ae090692ecf632116c
 - Locations of public gyms across Singapore
 - Initial Features: Name, Description
 
-Hawker Centre Location Dataset[](url)
+Hawker Centre Location Dataset [https://data.gov.sg/datasets/d_4a086da0a5553be1d89383cd90d07ecd/view](url)
 - Locations of Hawker Centres across Singapore
 - This is a live dataset hence this is the public API URL: [https://api-open.data.gov.sg/v1/public/api/datasets/d_4a086da0a5553be1d89383cd90d07ecd/poll-download](url)
 - Initial Attributes: OBJECTID, LANDXADDRESSPOINT, LANDYADDRESSPOINT, ADDRESSBUILDINGNAME, ADDRESSPOSTALCODE, ADDRESSSTREETNAME, DESCRIPTION, NAME, PHOTOURL, ADDRESSBLOCKHOUSENUMBER, STATUS, AWARDED_DATE, IMPLEMENTATION_DATE, INFO_ON_CO_LOCATORS, ADDRESS_MYENV, EST_ORIGINAL_COMPLETION_DATE, HUP_COMPLETION_DATE, NUMBER_OF_COOKED_FOOD_STALLS, INC_CRC, FMEL_UPD_D
 
-MRT Stations Dataset[https://www.kaggle.com/datasets/shengjunlim/singapore-mrt-lrt-stations-with-coordinates](url)
+MRT Stations Dataset [https://www.kaggle.com/datasets/shengjunlim/singapore-mrt-lrt-stations-with-coordinates](url)
 - Coordinates and details of the MRT and LRT Stations
 - Last updated was 4 years ago hence, the dataset is missing the newest MRT and LRT stations (Thomson-East Coast Line)
 - Initial Attributes: OBJECTID, STN_NAME, STN_NO, geometry, Latitude, Longitude
@@ -73,32 +73,38 @@ Pre-School Location Dataset[https://data.gov.sg/datasets/d_61eefab99958fd70e6aab
 - Locations of pre-schools across Singapore
 - Initial Features: Name, Description
 
-Retail Pharmacy Location Dataset[https://data.gov.sg/datasets/d_bb92615f43de22933e4479558b1f6c36/view](url)
+Retail Pharmacy Location Dataset [https://data.gov.sg/datasets/d_bb92615f43de22933e4479558b1f6c36/view](url)
 - Locations of retail pharmacy stores across Singapore
 - Initial Attributes: OBJECTID_1, POSTAL_CODE, BUILDING_NAME, UNIT_NO, LEVEL_NO, ROAD_NAME, HOUSE_BLK_NO, PHARMACY_NAME, INC_CRC, FMEL_UPD_D
 
-Supermarket Location Dataset[https://data.gov.sg/datasets/d_cac2c32f01960a3ad7202a99c27268a0/view](url)
+Supermarket Location Dataset [https://data.gov.sg/datasets/d_cac2c32f01960a3ad7202a99c27268a0/view](url)
 - Locations of supermarkets across Singapore
 - Initial Features: Name, Description
 
-Water Activity Area Location Dataset[https://data.gov.sg/datasets/d_3db7e1a18c685a2a61ced5a0deb83dae/view](url)
+Water Activity Area Location Dataset [https://data.gov.sg/datasets/d_3db7e1a18c685a2a61ced5a0deb83dae/view](url)
 - Locations of water activity areas such as swimming complexes, and water venture spots for fishing and kayaking
 - Initial Features: Name, Description
 
-Hospital Location Dataset[https://www.kaggle.com/datasets/muhdirshath/hospitals-in-singapore](url)
+Hospital Location Dataset [https://www.kaggle.com/datasets/muhdirshath/hospitals-in-singapore](url)
 - Locations of Hospitals across Singapore
 - Initial Attributes: hospital_name, address, postal_code, hospital_type, latitude, longitude, town
 
 Shopping Mall Dataset[https://www.kaggle.com/datasets/sunnysharma432/singapore-malls-pois](url)
 - Locations of shopping malls across Singapore
 - Initial Attributes: name, category, lat, lon, brand, address, website, phone
-Supplement: Shopping Mall Coordinate Dataset[https://www.kaggle.com/datasets/karthikgangula/shopping-mall-coordinates](url)
+
+Supplement: Shopping Mall Coordinate Dataset [https://www.kaggle.com/datasets/karthikgangula/shopping-mall-coordinates](url)
 - Coordinates of the shopping malls for cross-referencing
 - Intial Attributes: Mall Name, LATITUDE, LONGITUDE
 
-Clincs Dataset[https://www.kaggle.com/datasets/sunnysharma432/singapore-clinic-pois](url)
+Clincs Dataset [https://www.kaggle.com/datasets/sunnysharma432/singapore-clinic-pois](url)
 - Locations of GP Clinics and Polyclinics
 - Initial Attributes: name, category, lat, lon, brand, address, website, phone
+
+Bus Stops Dataset [https://datamall2.mytransport.sg/ltaodataservice/BusStops](url)
+-  Information for all bus stops currently being serviced by buses
+-  Initial File Type: json
+-  Initial Features: BUSSTOPCOD, DESCRIPTION, LATITUDE, LONGITUDE, ROADNAME
 
 ## Machine Learning Model
 
