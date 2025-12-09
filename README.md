@@ -20,6 +20,11 @@ Propwise aims to (Insert objectives)
 ### Datasets
 (Link to datasets and introduction of them)
 
+HDB Resale Flat Prices [https://data.gov.sg/collections/189/view] 
+Resale Flat Prices Based On Registration Date From Jan 2015 to Dec 2016 & Resale Flat Prices Based On Registration Date From Jan 2017 onwards
+- Transacted prices of HDB resale flats based on registration date 
+- Initial Features: Month, Town, Flat Type, Block, Street Name, Storey Range, Floor Area (sqm), Flat Model, Lease Commence Date, Remaining Lease, Resale Price
+
 HDB Price Range Dataset [https://data.gov.sg/datasets?query=HDB+price&resultId=177](url)
 - Price Range of BTO across the different financial year and town
 - Initial Features: Financial year, Town, Room Type, Min Selling Price, Max Selling Price
