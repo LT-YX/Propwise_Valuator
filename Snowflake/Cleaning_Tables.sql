@@ -28,6 +28,27 @@ FROM CLEANED_DATA.HDB_PRICE_RANGE;
 
 -- Antozesslyn
 -- Data Cleaning and Final Table Creation
+
+-- Check for null values  
+SELECT 
+    'Null Check' AS check_type,
+    COUNT(*) AS issue_count 
+FROM RAW_DATA.Resale_Flat_Prices
+WHERE resale_price IS NULL 
+   OR floor_area_sqm IS NULL 
+   OR town IS NULL 
+   OR month IS NULL;
+
+-- Check for duplicates
+SELECT 
+    month, town, block, street_name, resale_price, 
+    COUNT(*) as duplicate_count
+FROM RAW_DATA.Resale_Flat_Prices
+GROUP BY month, town, block, street_name, resale_price
+HAVING COUNT(*) > 1;
+
+
+
 -- Create the Cleaned Table
 USE SCHEMA CLEANED_DATA;
 
@@ -82,7 +103,6 @@ SELECT
     block,
     street_name
 FROM CLEANED_DATA.Resale_Flat_Prices_Cleaned;
-
 
 -- The below is done by Joely
 USE SCHEMA CLEANED_DATA;
