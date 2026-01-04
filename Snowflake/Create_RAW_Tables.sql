@@ -8,21 +8,78 @@ USE SCHEMA RAW_DATA;
 -- 2. Once file has been uploaded, create table
 -- 3. Load data from stage to table
 
--- HDB Price Range
+CREATE OR REPLACE FILE FORMAT csv_format
+    TYPE = CSV
+    FIELD_OPTIONALLY_ENCLOSED_BY = '"'
+    SKIP_HEADER = 1;
+
+-- HDB Price Range - Lv
 CREATE OR REPLACE TABLE HDB_Price_Range (
-    financial_year STRING,
+    financial_year STRING, -- Not a mathematical number
     town STRING,
     room_type STRING,
     min_selling_price STRING,
     max_selling_price STRING,
-    min_selling_price_less_ahg_shg STRING, -- Will remove these unnessary columns later
+    min_selling_price_less_ahg_shg STRING, 
     max_selling_price_less_ahg_shg STRING
 ); -- Temporary placeholder type
 
 
 COPY INTO HDB_Price_Range
 FROM @stage_raw/PriceRangeofHDBFlatsOffered.csv
-FILE_FORMAT = (TYPE = CSV FIELD_OPTIONALLY_ENCLOSED_BY='"' SKIP_HEADER=1)
+FILE_FORMAT = csv_format
+ON_ERROR = 'CONTINUE';
+
+-- HDB_Property_Info - Lv
+CREATE OR REPLACE TABLE HDB_Property_Info (
+    blk_no STRING, -- Not a mathematical number
+    street STRING,
+    max_floor_level NUMBER,
+    year_completed STRING, -- Not a mathematical number
+    residential STRING,
+    commercial STRING, 
+    market_hawker STRING,
+    multistorey_carpark STRING,
+    total_dwelling_units NUMBER
+); -- Temporary placeholder type
+
+COPY INTO HDB_Property_Info (blk_no, street, max_floor_level, year_completed, residential, commercial, market_hawker, multistorey_carpark, total_dwelling_units)
+FROM (
+    SELECT
+        $1,
+        $2,
+        TRY_TO_NUMBER($3),
+        TRY_TO_NUMBER($4),
+        $5,
+        $6,
+        $7,
+        $9,
+        TRY_TO_NUMBER($12)
+    FROM @stage_raw/HDBPropertyInformation.csv (FILE_FORMAT => csv_format)
+)
+ON_ERROR = 'CONTINUE';
+
+-- HDB Resale Index - Lv
+CREATE OR REPLACE TABLE HDB_Resale_Index(
+    year_quarter STRING,
+    resale_index DECIMAL
+);
+
+COPY INTO HDB_Resale_Index
+FROM @stage_raw/HDBResalePriceIndex1Q2009100Quarterly.csv
+FILE_FORMAT = csv_format
+ON_ERROR = 'CONTINUE';
+
+-- HDB Median Resale Price - Lv
+CREATE OR REPLACE TABLE HDB_Median_Resale_Price(
+    year_quarter STRING,
+    town STRING,
+    flat_type STRING,
+    price STRING -- Leave as String due to values
+);
+COPY INTO HDB_Median_Resale_Price
+FROM @stage_raw/MedianResalePricesforRegisteredApplicationsbyTownandFlatType.csv
+FILE_FORMAT = csv_format
 ON_ERROR = 'CONTINUE';
 
 -- 
