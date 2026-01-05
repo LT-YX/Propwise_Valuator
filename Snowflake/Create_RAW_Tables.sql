@@ -413,7 +413,7 @@ CREATE OR REPLACE TABLE RAW_DATA.RETAIL_PHARMACY (
 -- 2. Load GeoJSON file from stage
 -- Use STRIP_OUTER_ARRAY=TRUE to parse each feature as a separate row
 COPY INTO RAW_DATA.RETAIL_PHARMACY
-FROM @stage_raw/"Retail pharmacy locations (GEOJSON).geojson"
+FROM @stage_raw/RetailPharmacyLocations.geojson
 FILE_FORMAT = (TYPE = JSON STRIP_OUTER_ARRAY = TRUE)
 ON_ERROR = 'CONTINUE';
 

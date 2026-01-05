@@ -567,3 +567,645 @@ FROM GROUP4_ASG2.CLEANED_DATA.SHOPPING_MALLS_CLEANED;
 
 
 
+-- ============================================
+-- GEOJSON DATA CLEANING SCRIPT
+-- Created by: Hong Yi
+-- Purpose: Clean and standardize 10 GeoJSON datasets for HDB resale analysis
+-- ============================================
+
+USE WAREHOUSE GROUP4_ASG2;
+USE DATABASE Group4_Asg2;
+USE SCHEMA CLEANED_DATA;
+
+-- ============================================
+-- TABLE 1: CHAS CLINICS
+-- Description: Community Health Assist Scheme clinics providing subsidized healthcare
+-- Raw Data Type: GeoJSON with properties embedded in HTML Description field
+-- Key Fields: Clinic name, code, contact info, location
+-- ============================================
+
+-- 1. Inspect Raw Data structure
+SELECT location FROM GROUP4_ASG2.RAW_DATA.CHAS_CLINICS LIMIT 5;
+
+-- 2. Check total record count
+SELECT COUNT(*) AS total_records
+FROM GROUP4_ASG2.RAW_DATA.CHAS_CLINICS;
+
+-- 3. Create Cleaned Table by parsing GeoJSON
+-- Strategy: Extract data from HTML-formatted Description field using REGEXP_SUBSTR
+-- HTML pattern example: <th>HCINAME</th> <td>OnecarClinic</td>
+CREATE OR REPLACE TABLE GROUP4_ASG2.CLEANED_DATA.CHAS_CLINICS_CLEANED AS
+SELECT
+    -- Extract clinic identification fields
+    REGEXP_SUBSTR(location:properties:Description::STRING, 'thHCINAMEth td([^<]+)td', 1, 1, 'e', 1) AS clinic_name,
+    REGEXP_SUBSTR(location:properties:Description::STRING, 'thHCICODEth td([^<]+)td', 1, 1, 'e', 1) AS clinic_code,
+    REGEXP_SUBSTR(location:properties:Description::STRING, 'thLICENCETYPEth td([^<]+)td', 1, 1, 'e', 1) AS licence_type,
+    
+    -- Extract contact information
+    REGEXP_SUBSTR(location:properties:Description::STRING, 'thHCITELth td([^<]+)td', 1, 1, 'e', 1) AS phone,
+    
+    -- Extract address components
+    REGEXP_SUBSTR(location:properties:Description::STRING, 'thPOSTALCDth td([^<]+)td', 1, 1, 'e', 1) AS postal_code,
+    REGEXP_SUBSTR(location:properties:Description::STRING, 'thBLKHSENOth td([^<]+)td', 1, 1, 'e', 1) AS block_no,
+    REGEXP_SUBSTR(location:properties:Description::STRING, 'thSTREETNAMEth td([^<]+)td', 1, 1, 'e', 1) AS street_name,
+    REGEXP_SUBSTR(location:properties:Description::STRING, 'thBUILDINGNAMEth td([^<]+)td', 1, 1, 'e', 1) AS building_name,
+    REGEXP_SUBSTR(location:properties:Description::STRING, 'thFLOORNOth td([^<]+)td', 1, 1, 'e', 1) AS floor_no,
+    REGEXP_SUBSTR(location:properties:Description::STRING, 'thUNITNOth td([^<]+)td', 1, 1, 'e', 1) AS unit_no,
+    
+    -- Extract programme information for feature engineering
+    REGEXP_SUBSTR(location:properties:Description::STRING, 'thCLINICPROGRAMMECODEth td([^<]+)td', 1, 1, 'e', 1) AS programme_codes,
+    
+    -- Extract coordinates from GeoJSON geometry array
+    -- GeoJSON format: coordinates: [longitude, latitude, elevation]
+    location:geometry:coordinates[0]::FLOAT AS longitude,
+    location:geometry:coordinates[1]::FLOAT AS latitude,
+    
+    -- Store full geometry as GEOGRAPHY type for spatial analysis
+    -- This enables distance calculations, proximity queries, etc.
+    TO_GEOGRAPHY(location:geometry) AS geometry,
+    
+    -- Keep geometry type for reference (should be 'Point')
+    location:geometry:type::STRING AS geometry_type
+FROM GROUP4_ASG2.RAW_DATA.CHAS_CLINICS
+WHERE 
+    -- Filter to Singapore geographic bounds only
+    -- Latitude range: 1.16°N (Sentosa) to 1.50°N (Woodlands)
+    -- Longitude range: 103.60°E (Tuas) to 104.10°E (Changi)
+    location:geometry:coordinates[1]::FLOAT BETWEEN 1.16 AND 1.50
+    AND location:geometry:coordinates[0]::FLOAT BETWEEN 103.60 AND 104.10;
+
+-- 4. Verify cleaned data
+SELECT COUNT(*) AS cleaned_records 
+FROM GROUP4_ASG2.CLEANED_DATA.CHAS_CLINICS_CLEANED;
+
+-- 5. Data quality checks
+SELECT COUNT(*) AS null_clinic_names
+FROM GROUP4_ASG2.CLEANED_DATA.CHAS_CLINICS_CLEANED
+WHERE clinic_name IS NULL;
+
+SELECT COUNT(*) AS null_coordinates
+FROM GROUP4_ASG2.CLEANED_DATA.CHAS_CLINICS_CLEANED
+WHERE longitude IS NULL OR latitude IS NULL;
+
+
+-- ============================================
+-- TABLE 2: COMMUNITY CLUBS
+-- Description: Community centers providing social and recreational activities
+-- Raw Data Type: GeoJSON with properties embedded in HTML Description field
+-- Key Fields: Club name, address, website
+-- ============================================
+
+-- 1. Inspect Raw Data structure
+SELECT location FROM GROUP4_ASG2.RAW_DATA.COMMUNITY_CLUBS LIMIT 5;
+
+-- 2. Check total record count
+SELECT COUNT(*) AS total_records
+FROM GROUP4_ASG2.RAW_DATA.COMMUNITY_CLUBS;
+
+-- 3. Create Cleaned Table by parsing GeoJSON
+CREATE OR REPLACE TABLE GROUP4_ASG2.CLEANED_DATA.COMMUNITY_CLUBS_CLEANED AS
+SELECT
+    -- Extract community club identification
+    REGEXP_SUBSTR(location:properties:Description::STRING, 'thNAMEth td([^<]+)td', 1, 1, 'e', 1) AS name,
+    
+    -- Extract address components
+    REGEXP_SUBSTR(location:properties:Description::STRING, 'thADDRESSPOSTALCODEth td([^<]+)td', 1, 1, 'e', 1) AS postal_code,
+    REGEXP_SUBSTR(location:properties:Description::STRING, 'thADDRESSSTREETNAMEth td([^<]+)td', 1, 1, 'e', 1) AS street_name,
+    REGEXP_SUBSTR(location:properties:Description::STRING, 'thADDRESSBLOCKHOUSENUMBERth td([^<]+)td', 1, 1, 'e', 1) AS block_no,
+    REGEXP_SUBSTR(location:properties:Description::STRING, 'thADDRESSBUILDINGNAMEth td([^<]+)td', 1, 1, 'e', 1) AS building_name,
+    
+    -- Extract additional information
+    REGEXP_SUBSTR(location:properties:Description::STRING, 'thHYPERLINKth td([^<]+)td', 1, 1, 'e', 1) AS website,
+    REGEXP_SUBSTR(location:properties:Description::STRING, 'thDESCRIPTIONth td([^<]+)td', 1, 1, 'e', 1) AS description,
+    
+    -- Extract coordinates from GeoJSON geometry
+    location:geometry:coordinates[0]::FLOAT AS longitude,
+    location:geometry:coordinates[1]::FLOAT AS latitude,
+    
+    -- Store full geometry for spatial analysis
+    TO_GEOGRAPHY(location:geometry) AS geometry,
+    
+    -- Keep geometry type
+    location:geometry:type::STRING AS geometry_type
+FROM GROUP4_ASG2.RAW_DATA.COMMUNITY_CLUBS
+WHERE location:geometry:coordinates[1]::FLOAT BETWEEN 1.16 AND 1.50
+  AND location:geometry:coordinates[0]::FLOAT BETWEEN 103.60 AND 104.10;
+
+-- 4. Verify cleaned data
+SELECT COUNT(*) AS cleaned_records 
+FROM GROUP4_ASG2.CLEANED_DATA.COMMUNITY_CLUBS_CLEANED;
+
+-- 5. Data quality checks
+SELECT COUNT(*) AS null_names
+FROM GROUP4_ASG2.CLEANED_DATA.COMMUNITY_CLUBS_CLEANED
+WHERE name IS NULL;
+
+
+-- ============================================
+-- TABLE 3: ELDERCARE SERVICES
+-- Description: Elderly care facilities and support services
+-- Raw Data Type: GeoJSON with properties embedded in HTML Description field
+-- Key Fields: Service name, address, location
+-- ============================================
+
+-- 1. Inspect Raw Data structure
+SELECT location FROM GROUP4_ASG2.RAW_DATA.ELDERCARE_SERVICES LIMIT 5;
+
+-- 2. Check total record count
+SELECT COUNT(*) AS total_records
+FROM GROUP4_ASG2.RAW_DATA.ELDERCARE_SERVICES;
+
+-- 3. Create Cleaned Table by parsing GeoJSON
+CREATE OR REPLACE TABLE GROUP4_ASG2.CLEANED_DATA.ELDERCARE_SERVICES_CLEANED AS
+SELECT
+    -- Extract service identification
+    REGEXP_SUBSTR(location:properties:Description::STRING, 'thNAMEth td([^<]+)td', 1, 1, 'e', 1) AS name,
+    
+    -- Extract address components
+    REGEXP_SUBSTR(location:properties:Description::STRING, 'thADDRESSPOSTALCODEth td([^<]+)td', 1, 1, 'e', 1) AS postal_code,
+    REGEXP_SUBSTR(location:properties:Description::STRING, 'thADDRESSSTREETNAMEth td([^<]+)td', 1, 1, 'e', 1) AS address,
+    REGEXP_SUBSTR(location:properties:Description::STRING, 'thADDRESSBLOCKHOUSENUMBERth td([^<]+)td', 1, 1, 'e', 1) AS block_no,
+    REGEXP_SUBSTR(location:properties:Description::STRING, 'thADDRESSBUILDINGNAMEth td([^<]+)td', 1, 1, 'e', 1) AS building_name,
+    
+    -- Extract coordinates from GeoJSON geometry
+    location:geometry:coordinates[0]::FLOAT AS longitude,
+    location:geometry:coordinates[1]::FLOAT AS latitude,
+    
+    -- Store full geometry for spatial analysis
+    TO_GEOGRAPHY(location:geometry) AS geometry,
+    
+    -- Keep geometry type
+    location:geometry:type::STRING AS geometry_type
+FROM GROUP4_ASG2.RAW_DATA.ELDERCARE_SERVICES
+WHERE location:geometry:coordinates[1]::FLOAT BETWEEN 1.16 AND 1.50
+  AND location:geometry:coordinates[0]::FLOAT BETWEEN 103.60 AND 104.10;
+
+-- 4. Verify cleaned data
+SELECT COUNT(*) AS cleaned_records 
+FROM GROUP4_ASG2.CLEANED_DATA.ELDERCARE_SERVICES_CLEANED;
+
+-- 5. Data quality checks
+SELECT COUNT(*) AS null_names
+FROM GROUP4_ASG2.CLEANED_DATA.ELDERCARE_SERVICES_CLEANED
+WHERE name IS NULL;
+
+
+-- ============================================
+-- TABLE 4: GYMS SG
+-- Description: Fitness centers and gyms across Singapore
+-- Raw Data Type: GeoJSON with properties embedded in HTML Description field
+-- Key Fields: Gym name, address, operating hours, facilities
+-- ============================================
+
+-- 1. Inspect Raw Data structure
+SELECT location FROM GROUP4_ASG2.RAW_DATA.GYMS_SG LIMIT 5;
+
+-- 2. Check total record count
+SELECT COUNT(*) AS total_records
+FROM GROUP4_ASG2.RAW_DATA.GYMS_SG;
+
+-- 3. Create Cleaned Table by parsing GeoJSON
+CREATE OR REPLACE TABLE GROUP4_ASG2.CLEANED_DATA.GYMS_SG_CLEANED AS
+SELECT
+    -- Extract gym identification
+    REGEXP_SUBSTR(location:properties:Description::STRING, 'thNAMEth td([^<]+)td', 1, 1, 'e', 1) AS name,
+    
+    -- Extract address components
+    REGEXP_SUBSTR(location:properties:Description::STRING, 'thADDRESSPOSTALCODEth td([^<]+)td', 1, 1, 'e', 1) AS postal_code,
+    REGEXP_SUBSTR(location:properties:Description::STRING, 'thADDRESSSTREETNAMEth td([^<]+)td', 1, 1, 'e', 1) AS street_name,
+    REGEXP_SUBSTR(location:properties:Description::STRING, 'thADDRESSBLOCKHOUSENUMBERth td([^<]+)td', 1, 1, 'e', 1) AS block_no,
+    REGEXP_SUBSTR(location:properties:Description::STRING, 'thADDRESSBUILDINGNAMEth td([^<]+)td', 1, 1, 'e', 1) AS building_name,
+    REGEXP_SUBSTR(location:properties:Description::STRING, 'thADDRESSFLOORNUMBERth td([^<]+)td', 1, 1, 'e', 1) AS floor_no,
+    REGEXP_SUBSTR(location:properties:Description::STRING, 'thADDRESSUNITNUMBERth td([^<]+)td', 1, 1, 'e', 1) AS unit_no,
+    
+    -- Extract additional information for feature engineering
+    REGEXP_SUBSTR(location:properties:Description::STRING, 'thDESCRIPTIONth td([^<]+)td', 1, 1, 'e', 1) AS description,
+    
+    -- Extract coordinates from GeoJSON geometry
+    location:geometry:coordinates[0]::FLOAT AS longitude,
+    location:geometry:coordinates[1]::FLOAT AS latitude,
+    
+    -- Store full geometry for spatial analysis
+    -- Enables: distance to HDB, proximity queries, buffer analysis
+    TO_GEOGRAPHY(location:geometry) AS geometry,
+    
+    -- Keep geometry type
+    location:geometry:type::STRING AS geometry_type
+FROM GROUP4_ASG2.RAW_DATA.GYMS_SG
+WHERE location:geometry:coordinates[1]::FLOAT BETWEEN 1.16 AND 1.50
+  AND location:geometry:coordinates[0]::FLOAT BETWEEN 103.60 AND 104.10;
+
+-- 4. Verify cleaned data
+SELECT COUNT(*) AS cleaned_records 
+FROM GROUP4_ASG2.CLEANED_DATA.GYMS_SG_CLEANED;
+
+-- 5. Data quality checks
+SELECT COUNT(*) AS null_names
+FROM GROUP4_ASG2.CLEANED_DATA.GYMS_SG_CLEANED
+WHERE name IS NULL;
+
+-- 6. Sample cleaned data for verification
+SELECT * FROM GROUP4_ASG2.CLEANED_DATA.GYMS_SG_CLEANED LIMIT 10;
+
+
+
+-- ============================================
+-- TABLE 5: HAWKER CENTRES
+-- Description: Government-managed food centers with multiple stalls
+-- Raw Data Type: GeoJSON with properties directly accessible (not in HTML)
+-- Key Fields: Hawker name, address, status, number of stalls, completion dates
+-- ============================================
+
+-- 1. Inspect Raw Data structure
+SELECT location FROM GROUP4_ASG2.RAW_DATA.HAWKER_CENTRES LIMIT 5;
+
+-- 2. Check total record count
+SELECT COUNT(*) AS total_records
+FROM GROUP4_ASG2.RAW_DATA.HAWKER_CENTRES;
+
+-- 3. Create Cleaned Table by parsing GeoJSON
+-- Strategy: Direct property extraction using :: operator (cleaner than HTML parsing)
+CREATE OR REPLACE TABLE GROUP4_ASG2.CLEANED_DATA.HAWKER_CENTRES_CLEANED AS
+SELECT
+    -- Extract hawker centre identification
+    location:properties:NAME::STRING AS name,
+    TRY_TO_NUMBER(location:properties:OBJECTID::STRING) AS object_id,
+    
+    -- Extract address components
+    location:properties:ADDRESSPOSTALCODE::STRING AS postal_code,
+    location:properties:ADDRESSSTREETNAME::STRING AS street_name,
+    location:properties:ADDRESSBLOCKHOUSENUMBER::STRING AS block_no,
+    location:properties:ADDRESSBUILDINGNAME::STRING AS building_name,
+    
+    -- Extract operational information for feature engineering
+    location:properties:STATUS::STRING AS status,
+    location:properties:DESCRIPTION::STRING AS description,
+    TRY_TO_NUMBER(location:properties:NUMBEROFCOOKEDFOODSTALLS::STRING) AS num_cooked_food_stalls,
+    
+    -- Extract dates for temporal analysis
+    -- Note: Date format varies, using flexible parsing
+    location:properties:ESTORIGINALCOMPLETIONDATE::STRING AS original_completion_date,
+    location:properties:HUPCOMPLETIONDATE::STRING AS hup_completion_date,
+    location:properties:AWARDEDDATE::STRING AS awarded_date,
+    
+    -- Extract co-location information (useful for amenity density features)
+    location:properties:INFOONCOLOCATORS::STRING AS colocators,
+    
+    -- Extract coordinates from GeoJSON geometry
+    location:geometry:coordinates[0]::FLOAT AS longitude,
+    location:geometry:coordinates[1]::FLOAT AS latitude,
+    
+    -- Store full geometry for spatial analysis
+    TO_GEOGRAPHY(location:geometry) AS geometry,
+    
+    -- Keep geometry type
+    location:geometry:type::STRING AS geometry_type
+FROM GROUP4_ASG2.RAW_DATA.HAWKER_CENTRES
+WHERE location:geometry:coordinates[1]::FLOAT BETWEEN 1.16 AND 1.50
+  AND location:geometry:coordinates[0]::FLOAT BETWEEN 103.60 AND 104.10;
+
+-- 4. Verify cleaned data
+SELECT COUNT(*) AS cleaned_records 
+FROM GROUP4_ASG2.CLEANED_DATA.HAWKER_CENTRES_CLEANED;
+
+-- 5. Data quality checks
+SELECT COUNT(*) AS null_names
+FROM GROUP4_ASG2.CLEANED_DATA.HAWKER_CENTRES_CLEANED
+WHERE name IS NULL;
+
+-- 6. Check status distribution
+SELECT status, COUNT(*) AS count
+FROM GROUP4_ASG2.CLEANED_DATA.HAWKER_CENTRES_CLEANED
+GROUP BY status
+ORDER BY count DESC;
+
+
+-- ============================================
+-- TABLE 6: PARKS
+-- Description: National parks, gardens, and recreational green spaces
+-- Raw Data Type: GeoJSON with properties directly accessible
+-- Key Fields: Park name, coordinates, object ID
+-- ============================================
+
+-- 1. Inspect Raw Data structure
+SELECT location FROM GROUP4_ASG2.RAW_DATA.PARKS LIMIT 5;
+
+-- 2. Check total record count
+SELECT COUNT(*) AS total_records
+FROM GROUP4_ASG2.RAW_DATA.PARKS;
+
+-- 3. Create Cleaned Table by parsing GeoJSON
+-- Strategy: Direct property extraction (simplest approach)
+CREATE OR REPLACE TABLE GROUP4_ASG2.CLEANED_DATA.PARKS_CLEANED AS
+SELECT
+    -- Extract park identification
+    location:properties:NAME::STRING AS name,
+    TRY_TO_NUMBER(location:properties:OBJECTID::STRING) AS object_id,
+    
+    -- Extract coordinate reference system values (for advanced GIS)
+    TRY_TO_NUMBER(location:properties:X::STRING) AS x_coordinate,
+    TRY_TO_NUMBER(location:properties:Y::STRING) AS y_coordinate,
+    
+    -- Extract metadata
+    location:properties:INCCRC::STRING AS inc_crc,
+    location:properties:FMELUPDD::STRING AS last_updated,
+    
+    -- Extract coordinates from GeoJSON geometry
+    location:geometry:coordinates[0]::FLOAT AS longitude,
+    location:geometry:coordinates[1]::FLOAT AS latitude,
+    
+    -- Store full geometry for spatial analysis
+    -- Use case: Calculate distance from HDB to nearest park
+    TO_GEOGRAPHY(location:geometry) AS geometry,
+    
+    -- Keep geometry type
+    location:geometry:type::STRING AS geometry_type
+FROM GROUP4_ASG2.RAW_DATA.PARKS
+WHERE location:geometry:coordinates[1]::FLOAT BETWEEN 1.16 AND 1.50
+  AND location:geometry:coordinates[0]::FLOAT BETWEEN 103.60 AND 104.10;
+
+-- 4. Verify cleaned data
+SELECT COUNT(*) AS cleaned_records 
+FROM GROUP4_ASG2.CLEANED_DATA.PARKS_CLEANED;
+
+-- 5. Data quality checks
+SELECT COUNT(*) AS null_names
+FROM GROUP4_ASG2.CLEANED_DATA.PARKS_CLEANED
+WHERE name IS NULL;
+
+
+-- ============================================
+-- TABLE 7: PRESCHOOLS
+-- Description: Preschool and childcare center locations
+-- Raw Data Type: GeoJSON with properties embedded in HTML Description field
+-- Key Fields: Center name, center code, location
+-- ============================================
+
+-- 1. Inspect Raw Data structure
+SELECT location FROM GROUP4_ASG2.RAW_DATA.PRESCHOOLS LIMIT 5;
+
+-- 2. Check total record count
+SELECT COUNT(*) AS total_records
+FROM GROUP4_ASG2.RAW_DATA.PRESCHOOLS;
+
+-- 3. Create Cleaned Table by parsing GeoJSON
+CREATE OR REPLACE TABLE GROUP4_ASG2.CLEANED_DATA.PRESCHOOLS_CLEANED AS
+SELECT
+    -- Extract preschool identification
+    REGEXP_SUBSTR(location:properties:Description::STRING, 'thCENTRENAMEth td([^<]+)td', 1, 1, 'e', 1) AS centre_name,
+    REGEXP_SUBSTR(location:properties:Description::STRING, 'thCENTRECODEth td([^<]+)td', 1, 1, 'e', 1) AS centre_code,
+    
+    -- Extract metadata
+    REGEXP_SUBSTR(location:properties:Description::STRING, 'thINCCRCth td([^<]+)td', 1, 1, 'e', 1) AS inc_crc,
+    REGEXP_SUBSTR(location:properties:Description::STRING, 'thFMELUPDDth td([^<]+)td', 1, 1, 'e', 1) AS last_updated,
+    
+    -- Extract coordinates from GeoJSON geometry
+    location:geometry:coordinates[0]::FLOAT AS longitude,
+    location:geometry:coordinates[1]::FLOAT AS latitude,
+    
+    -- Store full geometry for spatial analysis
+    -- Use case: Proximity to preschools affects family housing decisions
+    TO_GEOGRAPHY(location:geometry) AS geometry,
+    
+    -- Keep geometry type
+    location:geometry:type::STRING AS geometry_type
+FROM GROUP4_ASG2.RAW_DATA.PRESCHOOLS
+WHERE location:geometry:coordinates[1]::FLOAT BETWEEN 1.16 AND 1.50
+  AND location:geometry:coordinates[0]::FLOAT BETWEEN 103.60 AND 104.10;
+
+-- 4. Verify cleaned data
+SELECT COUNT(*) AS cleaned_records 
+FROM GROUP4_ASG2.CLEANED_DATA.PRESCHOOLS_CLEANED;
+
+-- 5. Data quality checks
+SELECT COUNT(*) AS null_names
+FROM GROUP4_ASG2.CLEANED_DATA.PRESCHOOLS_CLEANED
+WHERE centre_name IS NULL;
+
+
+-- ============================================
+-- TABLE 8: RETAIL PHARMACY
+-- Description: Licensed retail pharmacy locations
+-- Raw Data Type: GeoJSON with properties directly accessible
+-- Key Fields: Pharmacy name, address, postal code, building info
+-- ============================================
+
+-- 1. Inspect Raw Data structure
+SELECT location FROM GROUP4_ASG2.RAW_DATA.RETAIL_PHARMACY LIMIT 5;
+
+-- 2. Check total record count
+SELECT COUNT(*) AS total_records
+FROM GROUP4_ASG2.RAW_DATA.RETAIL_PHARMACY;
+
+-- 3. Create Cleaned Table by parsing GeoJSON
+-- Strategy: Direct property extraction (properties are clean, not in HTML)
+CREATE OR REPLACE TABLE GROUP4_ASG2.CLEANED_DATA.RETAIL_PHARMACY_CLEANED AS
+SELECT
+    -- Extract pharmacy identification
+    location:properties:PHARMACYNAME::STRING AS pharmacy_name,
+    TRY_TO_NUMBER(location:properties:OBJECTID1::STRING) AS object_id,
+    
+    -- Extract address components
+    location:properties:POSTALCODE::STRING AS postal_code,
+    location:properties:ROADNAME::STRING AS road_name,
+    location:properties:HOUSEBLKNO::STRING AS block_no,
+    location:properties:BUILDINGNAME::STRING AS building_name,
+    location:properties:LEVELNO::STRING AS floor_no,
+    location:properties:UNITNO::STRING AS unit_no,
+    
+    -- Extract metadata
+    location:properties:INCCRC::STRING AS inc_crc,
+    location:properties:FMELUPDD::STRING AS last_updated,
+    
+    -- Extract coordinates from GeoJSON geometry
+    location:geometry:coordinates[0]::FLOAT AS longitude,
+    location:geometry:coordinates[1]::FLOAT AS latitude,
+    
+    -- Store full geometry for spatial analysis
+    -- Use case: Healthcare accessibility metric
+    TO_GEOGRAPHY(location:geometry) AS geometry,
+    
+    -- Keep geometry type
+    location:geometry:type::STRING AS geometry_type
+FROM GROUP4_ASG2.RAW_DATA.RETAIL_PHARMACY
+WHERE location:geometry:coordinates[1]::FLOAT BETWEEN 1.16 AND 1.50
+  AND location:geometry:coordinates[0]::FLOAT BETWEEN 103.60 AND 104.10;
+
+-- 4. Verify cleaned data
+SELECT COUNT(*) AS cleaned_records 
+FROM GROUP4_ASG2.CLEANED_DATA.RETAIL_PHARMACY_CLEANED;
+
+-- 5. Data quality checks
+SELECT COUNT(*) AS null_names
+FROM GROUP4_ASG2.CLEANED_DATA.RETAIL_PHARMACY_CLEANED
+WHERE pharmacy_name IS NULL;
+
+
+-- ============================================
+-- TABLE 9: SUPERMARKETS
+-- Description: Licensed supermarket and grocery store locations
+-- Raw Data Type: GeoJSON with properties embedded in HTML Description field
+-- Key Fields: License name, address, postal code
+-- ============================================
+
+-- 1. Inspect Raw Data structure
+SELECT location FROM GROUP4_ASG2.RAW_DATA.SUPERMARKETS LIMIT 5;
+
+-- 2. Check total record count
+SELECT COUNT(*) AS total_records
+FROM GROUP4_ASG2.RAW_DATA.SUPERMARKETS;
+
+-- 3. Create Cleaned Table by parsing GeoJSON
+CREATE OR REPLACE TABLE GROUP4_ASG2.CLEANED_DATA.SUPERMARKETS_CLEANED AS
+SELECT
+    -- Extract supermarket identification
+    -- LICNAME contains the business name
+    REGEXP_SUBSTR(location:properties:Description::STRING, 'thLICNAMEth td([^<]+)td', 1, 1, 'e', 1) AS business_name,
+    REGEXP_SUBSTR(location:properties:Description::STRING, 'thLICNOth td([^<]+)td', 1, 1, 'e', 1) AS licence_no,
+    
+    -- Extract address components
+    REGEXP_SUBSTR(location:properties:Description::STRING, 'thPOSTCODEth td([^<]+)td', 1, 1, 'e', 1) AS postal_code,
+    REGEXP_SUBSTR(location:properties:Description::STRING, 'thSTRNAMEth td([^<]+)td', 1, 1, 'e', 1) AS street_name,
+    REGEXP_SUBSTR(location:properties:Description::STRING, 'thBLKHOUSEth td([^<]+)td', 1, 1, 'e', 1) AS block_no,
+    REGEXP_SUBSTR(location:properties:Description::STRING, 'thUNITNOth td([^<]+)td', 1, 1, 'e', 1) AS unit_no,
+    
+    -- Extract metadata
+    REGEXP_SUBSTR(location:properties:Description::STRING, 'thINCCRCth td([^<]+)td', 1, 1, 'e', 1) AS inc_crc,
+    REGEXP_SUBSTR(location:properties:Description::STRING, 'thFMELUPDDth td([^<]+)td', 1, 1, 'e', 1) AS last_updated,
+    
+    -- Extract coordinates from GeoJSON geometry
+    location:geometry:coordinates[0]::FLOAT AS longitude,
+    location:geometry:coordinates[1]::FLOAT AS latitude,
+    
+    -- Store full geometry for spatial analysis
+    -- Use case: Calculate supermarket density, accessibility index
+    TO_GEOGRAPHY(location:geometry) AS geometry,
+    
+    -- Keep geometry type
+    location:geometry:type::STRING AS geometry_type
+FROM GROUP4_ASG2.RAW_DATA.SUPERMARKETS
+WHERE location:geometry:coordinates[1]::FLOAT BETWEEN 1.16 AND 1.50
+  AND location:geometry:coordinates[0]::FLOAT BETWEEN 103.60 AND 104.10;
+
+-- 4. Verify cleaned data
+SELECT COUNT(*) AS cleaned_records 
+FROM GROUP4_ASG2.CLEANED_DATA.SUPERMARKETS_CLEANED;
+
+-- 5. Data quality checks
+SELECT COUNT(*) AS null_names
+FROM GROUP4_ASG2.CLEANED_DATA.SUPERMARKETS_CLEANED
+WHERE business_name IS NULL;
+
+-- 6. Check for common supermarket chains (useful for brand analysis)
+SELECT 
+    CASE 
+        WHEN business_name LIKE '%NTUC FAIRPRICE%' THEN 'NTUC FairPrice'
+        WHEN business_name LIKE '%SHENG SIONG%' THEN 'Sheng Siong'
+        WHEN business_name LIKE '%COLD STORAGE%' THEN 'Cold Storage'
+        WHEN business_name LIKE '%PRIME SUPERMARKET%' THEN 'Prime'
+        ELSE 'Others'
+    END AS supermarket_chain,
+    COUNT(*) AS count
+FROM GROUP4_ASG2.CLEANED_DATA.SUPERMARKETS_CLEANED
+GROUP BY supermarket_chain
+ORDER BY count DESC;
+
+
+-- ============================================
+-- TABLE 10: WATER ACTIVITIES
+-- Description: Water sports facilities, swimming complexes, and aquatic centers
+-- Raw Data Type: GeoJSON with properties embedded in HTML Description field
+-- Key Fields: Facility name, address, facilities description, operating hours
+-- ============================================
+
+-- 1. Inspect Raw Data structure
+SELECT location FROM GROUP4_ASG2.RAW_DATA.WATER_ACTIVITIES LIMIT 5;
+
+-- 2. Check total record count
+SELECT COUNT(*) AS total_records
+FROM GROUP4_ASG2.RAW_DATA.WATER_ACTIVITIES;
+
+-- 3. Create Cleaned Table by parsing GeoJSON
+CREATE OR REPLACE TABLE GROUP4_ASG2.CLEANED_DATA.WATER_ACTIVITIES_CLEANED AS
+SELECT  
+    -- Extract facility identification
+    REGEXP_SUBSTR(location:properties:Description::STRING, 'thNAMEth td([^<]+)td', 1, 1, 'e', 1) AS name,
+    
+    -- Extract address components
+    REGEXP_SUBSTR(location:properties:Description::STRING, 'thADDRESSPOSTALCODEth td([^<]+)td', 1, 1, 'e', 1) AS postal_code,
+    REGEXP_SUBSTR(location:properties:Description::STRING, 'thADDRESSSTREETNAMEth td([^<]+)td', 1, 1, 'e', 1) AS street_name,
+    REGEXP_SUBSTR(location:properties:Description::STRING, 'thADDRESSBLOCKHOUSENUMBERth td([^<]+)td', 1, 1, 'e', 1) AS block_no,
+    REGEXP_SUBSTR(location:properties:Description::STRING, 'thADDRESSBUILDINGNAMEth td([^<]+)td', 1, 1, 'e', 1) AS building_name,
+    REGEXP_SUBSTR(location:properties:Description::STRING, 'thADDRESSFLOORNUMBERth td([^<]+)td', 1, 1, 'e', 1) AS floor_no,
+    REGEXP_SUBSTR(location:properties:Description::STRING, 'thADDRESSUNITNUMBERth td([^<]+)td', 1, 1, 'e', 1) AS unit_no,
+    
+    -- Extract facilities and operating information (useful for amenity quality features)
+    REGEXP_SUBSTR(location:properties:Description::STRING, 'thDESCRIPTIONth td([^<]+)td', 1, 1, 'e', 1) AS description,
+    REGEXP_SUBSTR(location:properties:Description::STRING, 'thHYPERLINKth td([^<]+)td', 1, 1, 'e', 1) AS website,
+    
+    -- Extract land coordinates (alternative coordinate system)
+    TRY_TO_NUMBER(REGEXP_SUBSTR(location:properties:Description::STRING, 'thLANDXADDRESSPOINTth td([^<]+)td', 1, 1, 'e', 1)) AS land_x,
+    TRY_TO_NUMBER(REGEXP_SUBSTR(location:properties:Description::STRING, 'thLANDYADDRESSPOINTth td([^<]+)td', 1, 1, 'e', 1)) AS land_y,
+    
+    -- Extract coordinates from GeoJSON geometry
+    location:geometry:coordinates[0]::FLOAT AS longitude,
+    location:geometry:coordinates[1]::FLOAT AS latitude,
+    
+    -- Store full geometry for spatial analysis
+    -- Use case: Recreational facility accessibility
+    TO_GEOGRAPHY(location:geometry) AS geometry,
+    
+    -- Keep geometry type
+    location:geometry:type::STRING AS geometry_type
+FROM GROUP4_ASG2.RAW_DATA.WATER_ACTIVITIES
+WHERE location:geometry:coordinates[1]::FLOAT BETWEEN 1.16 AND 1.50
+  AND location:geometry:coordinates[0]::FLOAT BETWEEN 103.60 AND 104.10;
+
+-- 4. Verify cleaned data
+SELECT COUNT(*) AS cleaned_records 
+FROM GROUP4_ASG2.CLEANED_DATA.WATER_ACTIVITIES_CLEANED;
+
+-- 5. Data quality checks
+SELECT COUNT(*) AS null_names
+FROM GROUP4_ASG2.CLEANED_DATA.WATER_ACTIVITIES_CLEANED
+WHERE name IS NULL;
+
+-- 6. Sample cleaned data for verification
+SELECT * FROM GROUP4_ASG2.CLEANED_DATA.WATER_ACTIVITIES_CLEANED LIMIT 10;
+
+
+-- ============================================
+-- SUMMARY AND FINAL VERIFICATION
+-- ============================================
+
+-- Count all cleaned GeoJSON tables
+SELECT 'CHAS_CLINICS' AS table_name, COUNT(*) AS record_count 
+FROM GROUP4_ASG2.CLEANED_DATA.CHAS_CLINICS_CLEANED
+UNION ALL
+SELECT 'COMMUNITY_CLUBS', COUNT(*) 
+FROM GROUP4_ASG2.CLEANED_DATA.COMMUNITY_CLUBS_CLEANED
+UNION ALL
+SELECT 'ELDERCARE_SERVICES', COUNT(*) 
+FROM GROUP4_ASG2.CLEANED_DATA.ELDERCARE_SERVICES_CLEANED
+UNION ALL
+SELECT 'GYMS_SG', COUNT(*) 
+FROM GROUP4_ASG2.CLEANED_DATA.GYMS_SG_CLEANED
+UNION ALL
+SELECT 'HAWKER_CENTRES', COUNT(*) 
+FROM GROUP4_ASG2.CLEANED_DATA.HAWKER_CENTRES_CLEANED
+UNION ALL
+SELECT 'PARKS', COUNT(*) 
+FROM GROUP4_ASG2.CLEANED_DATA.PARKS_CLEANED
+UNION ALL
+SELECT 'PRESCHOOLS', COUNT(*) 
+FROM GROUP4_ASG2.CLEANED_DATA.PRESCHOOLS_CLEANED
+UNION ALL
+SELECT 'RETAIL_PHARMACY', COUNT(*) 
+FROM GROUP4_ASG2.CLEANED_DATA.RETAIL_PHARMACY_CLEANED
+UNION ALL
+SELECT 'SUPERMARKETS', COUNT(*) 
+FROM GROUP4_ASG2.CLEANED_DATA.SUPERMARKETS_CLEANED
+UNION ALL
+SELECT 'WATER_ACTIVITIES', COUNT(*) 
+FROM GROUP4_ASG2.CLEANED_DATA.WATER_ACTIVITIES_CLEANED
+ORDER BY record_count DESC;
