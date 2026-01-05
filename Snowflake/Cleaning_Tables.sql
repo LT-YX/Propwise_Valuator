@@ -29,6 +29,7 @@ FROM CLEANED_DATA.HDB_PRICE_RANGE;
 -- Antozesslyn
 -- Data Cleaning and Final Table Creation
 
+-- Data Quality Checks
 -- Check for null values  
 SELECT 
     'Null Check' AS check_type,
@@ -49,41 +50,47 @@ HAVING COUNT(*) > 1;
 
 
 
--- Create the Cleaned Table
+-- Create the Cleaned Table and Perform Feature Engineering
 USE SCHEMA CLEANED_DATA;
 
 CREATE OR REPLACE TABLE CLEANED_DATA.Resale_Flat_Prices_Cleaned AS
 SELECT
-    -- Convert 'month' (e.g., '2015-01') to a DATE type
+    -- Convert 'month' ('2015-01') to a DATE type
     TRY_TO_DATE(month, 'YYYY-MM') AS sale_date,
-
-    -- Retain key location/property features
     town,
     flat_type,
     block,
     street_name,
     storey_range,
     flat_model,
-
     -- Convert numerical fields using TRY_TO_NUMBER for error handling
     TRY_TO_NUMBER(floor_area_sqm) AS floor_area_sqm,
     TRY_TO_NUMBER(lease_commence_date) AS lease_commence_year,
     TRY_TO_NUMBER(resale_price) AS resale_price,
 
-    -- Feature Engineering: Extracting approximate remaining lease in years as a float
+    -- Feature Engineering 1 : Extracting approximate remaining lease in years as a float
     -- This handles strings like '60 years 05 months' and '70' (for older data)
     -- The formula extracts years and months/12
-    COALESCE(
-        TRY_TO_NUMBER(SPLIT_PART(remaining_lease, ' years', 1)),
-        TRY_TO_NUMBER(remaining_lease) -- Handle cases where it's just a number
-    ) +
-    COALESCE(
-        (TRY_TO_NUMBER(SPLIT_PART(SPLIT_PART(remaining_lease, ' months', 1), ' ', -1)) / 12),
-        0
-    ) AS remaining_lease_years_float
+    -- This ensures standardisation
+CASE 
+        WHEN remaining_lease LIKE '%years%' THEN -- Checks if data looks like '60 Years 5 Months'
+            TRY_TO_NUMBER(SPLIT_PART(remaining_lease, ' years', 1)) + -- Takes the number of years
+            (COALESCE(TRY_TO_NUMBER(SPLIT_PART(SPLIT_PART(remaining_lease, ' months', 1), ' ', -1)), 0) / 12)
+            -- Finds the month number and divides it by 12 to get "decimal years" or 0 if there are no months
+        ELSE -- '60'
+            TRY_TO_NUMBER(remaining_lease) -- Turn text into a number
+    END AS remaining_lease_years, -- Saves the final result into a new column
 
-FROM RAW_DATA.Resale_Flat_Prices
+    -- Feature Engineering 2 : Price per SQM
+    -- This allows comparison of the value regardless of the flat size
+    (TRY_TO_NUMBER(resale_price) / NULLIF(TRY_TO_NUMBER(floor_area_sqm), 0)) AS price_per_sqm,
+    
+    -- Feature Engineering 3 : Flat age at time of sale 
+    -- This calculated the how old the flat was at the time of sale
+    (YEAR(TRY_TO_DATE(month, 'YYYY-MM')) - TRY_TO_NUMBER(lease_commence_date)) AS flat_age
 
+    
+FROM RAW_DATA.Resale_Flat_Prices;
 
 -- Create the Final Joined/Consolidated Table
 -- Since the files were combined in the RAW stage, this step is for final feature selection/view
@@ -94,14 +101,16 @@ SELECT
     sale_date,
     town,
     flat_type,
-    floor_area_sqm,
-    resale_price,
-    lease_commence_year,
-    remaining_lease_years_float,
     storey_range,
     flat_model,
+    floor_area_sqm,
+    resale_price,
+    remaining_lease_years,
+    price_per_sqm,
+    flat_age,
     block,
-    street_name
+    street_name,
+    lease_commence_year
 FROM CLEANED_DATA.Resale_Flat_Prices_Cleaned;
 
 -- The below is done by Joely
