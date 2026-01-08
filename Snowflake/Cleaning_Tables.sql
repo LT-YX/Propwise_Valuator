@@ -25,6 +25,30 @@ SELECT
     TRY_TO_NUMBER(MAX_SELLING_PRICE) AS max_selling_price,
 FROM CLEANED_DATA.HDB_PRICE_RANGE;
 
+-- HDB Property Info - No futher cleaning needs to be done
+CREATE OR REPLACE TABLE CLEANED_DATA.HDB_Property_Info AS
+SELECT * FROM RAW_DATA.HDB_PROPERTY_INFO;
+
+-- HDB Resale Index
+CREATE OR REPLACE TABLE CLEANED_DATA.HDB_Resale_Index AS
+SELECT  
+    SPLIT(year_quarter, '-')[0]::INTEGER AS year, 
+    SPLIT(year_quarter, '-')[1]::STRING AS quarter,
+    resale_index
+FROM RAW_DATA.HDB_Resale_Index;
+
+-- HDB Median Resale Price
+CREATE OR REPLACE TABLE CLEANED_DATA.HDB_Median_Resale_Price AS
+SELECT 
+    SPLIT(year_quarter, '-')[0]::INTEGER AS year, 
+    SPLIT(year_quarter, '-')[1]::STRING AS quarter,
+    town,
+    flat_type,
+    CASE
+        WHEN LOWER(price) IN ('na', '-') THEN NULL
+        ELSE price::FLOAT
+    END AS price,
+FROM RAW_DATA.HDB_MEDIAN_RESALE_PRICE;
 
 -- Antozesslyn
 -- Data Cleaning and Final Table Creation
