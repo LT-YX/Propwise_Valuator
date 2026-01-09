@@ -141,7 +141,7 @@ FROM CLEANED_DATA.Resale_Flat_Prices_Cleaned;
 USE SCHEMA CLEANED_DATA;
 
 -- 4. Create Cleaned Table by parsing GeoJSON properties and geometry
-CREATE OR REPLACE TABLE CLEANED_DATA.HDB_Existing_Building_Cleaned AS
+CREATE OR REPLACE TABLE CLEANED_DATA.HDB_Existing_Building AS
 SELECT
     -- Extract property attributes using :: operator
     raw_data:properties:OBJECTID::INTEGER AS object_id,
@@ -164,14 +164,14 @@ SELECT
 FROM RAW_DATA.HDB_Existing_Building;
 
 -- 5. Verify cleaned data
-SELECT COUNT(*) FROM CLEANED_DATA.HDB_Existing_Building_Cleaned;
+SELECT COUNT(*) FROM CLEANED_DATA.HDB_Existing_Building;
 
 -- Check for any null postal codes or block numbers (data quality check)
 SELECT 
     COUNT(*) AS total_records,
     COUNT(block_no) AS blocks_with_data,
     COUNT(postal_code) AS postal_codes_with_data
-FROM CLEANED_DATA.HDB_Existing_Building_Cleaned;
+FROM CLEANED_DATA.HDB_Existing_Building;
 
 -- By Alluru Rishitha
 -- Cleaning Bus_Stops Table
