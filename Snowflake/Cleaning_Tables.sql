@@ -163,7 +163,11 @@ SELECT
     TO_GEOGRAPHY(f.value:geometry) AS geometry,
     
     -- Keep geometry type for reference
-    f.value:geometry:type::STRING AS geometry_type
+    f.value:geometry:type::STRING AS geometry_type,
+    
+    -- Extract latitude and longitude from geometry
+    ST_Y(ST_CENTROID(TO_GEOGRAPHY(f.value:geometry))) AS latitude,
+    ST_X(ST_CENTROID(TO_GEOGRAPHY(f.value:geometry))) AS longitude
 FROM RAW_DATA.hdb_existing_building,
 LATERAL FLATTEN(input => raw_data:features) f;
 
@@ -174,8 +178,20 @@ SELECT COUNT(*) FROM CLEANED_DATA.hdb_existing_building_cleaned;
 SELECT 
     COUNT(*) AS total_records,
     COUNT(block_no) AS blocks_with_data,
-    COUNT(postal_code) AS postal_codes_with_data
+    COUNT(postal_code) AS postal_codes_with_data,
+    COUNT(latitude) AS records_with_latitude,
+    COUNT(longitude) AS records_with_longitude
 FROM CLEANED_DATA.hdb_existing_building_cleaned;
+
+-- Preview data with coordinates
+SELECT 
+    block_no,
+    postal_code,
+    latitude,
+    longitude,
+    geometry_type
+FROM CLEANED_DATA.hdb_existing_building_cleaned
+LIMIT 10;
 
 -- By Alluru Rishitha
 -- Cleaning Bus_Stops Table
