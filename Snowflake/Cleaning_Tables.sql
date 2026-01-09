@@ -140,38 +140,42 @@ FROM CLEANED_DATA.Resale_Flat_Prices_Cleaned;
 -- The below is done by Joely
 USE SCHEMA CLEANED_DATA;
 
--- 4. Create Cleaned Table by parsing GeoJSON properties and geometry
-CREATE OR REPLACE TABLE CLEANED_DATA.HDB_Existing_Building AS
+-- Drop the existing cleaned table if it exists
+DROP TABLE IF EXISTS CLEANED_DATA.hdb_existing_building_cleaned;
+
+-- 4. Create Cleaned Table using LATERAL FLATTEN to parse the features array
+CREATE OR REPLACE TABLE CLEANED_DATA.hdb_existing_building_cleaned AS
 SELECT
-    -- Extract property attributes using :: operator
-    raw_data:properties:OBJECTID::INTEGER AS object_id,
-    raw_data:properties:BLK_NO::STRING AS block_no,
-    raw_data:properties:ST_COD::STRING AS street_code,
-    raw_data:properties:ENTITYID::INTEGER AS entity_id,
-    raw_data:properties:POSTAL_COD::STRING AS postal_code,
-    raw_data:properties:INC_CRC::STRING AS inc_crc,
-    raw_data:properties:FMEL_UPD_D::STRING AS last_updated,
+    -- Extract property attributes from the flattened features
+    f.value:properties:OBJECTID::INTEGER AS object_id,
+    f.value:properties:BLK_NO::STRING AS block_no,
+    f.value:properties:ST_COD::STRING AS street_code,
+    f.value:properties:ENTITYID::INTEGER AS entity_id,
+    f.value:properties:POSTAL_COD::STRING AS postal_code,
+    f.value:properties:INC_CRC::STRING AS inc_crc,
+    f.value:properties:FMEL_UPD_D::STRING AS last_updated,
     
     -- For numeric fields, cast to STRING first, then to NUMBER
-    TRY_TO_NUMBER(raw_data:properties:"SHAPE.AREA"::STRING) AS shape_area,
-    TRY_TO_NUMBER(raw_data:properties:"SHAPE.LEN"::STRING) AS shape_length,
+    TRY_TO_NUMBER(f.value:properties:"SHAPE.AREA"::STRING) AS shape_area,
+    TRY_TO_NUMBER(f.value:properties:"SHAPE.LEN"::STRING) AS shape_length,
     
     -- Store geometry as GEOGRAPHY type for spatial analysis
-    TO_GEOGRAPHY(raw_data:geometry) AS geometry,
+    TO_GEOGRAPHY(f.value:geometry) AS geometry,
     
     -- Keep geometry type for reference
-    raw_data:geometry:type::STRING AS geometry_type
-FROM RAW_DATA.HDB_Existing_Building;
+    f.value:geometry:type::STRING AS geometry_type
+FROM RAW_DATA.hdb_existing_building,
+LATERAL FLATTEN(input => raw_data:features) f;
 
 -- 5. Verify cleaned data
-SELECT COUNT(*) FROM CLEANED_DATA.HDB_Existing_Building;
+SELECT COUNT(*) FROM CLEANED_DATA.hdb_existing_building_cleaned;
 
 -- Check for any null postal codes or block numbers (data quality check)
 SELECT 
     COUNT(*) AS total_records,
     COUNT(block_no) AS blocks_with_data,
     COUNT(postal_code) AS postal_codes_with_data
-FROM CLEANED_DATA.HDB_Existing_Building;
+FROM CLEANED_DATA.hdb_existing_building_cleaned;
 
 -- By Alluru Rishitha
 -- Cleaning Bus_Stops Table
