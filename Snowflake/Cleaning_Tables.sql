@@ -141,56 +141,56 @@ FROM CLEANED_DATA.Resale_Flat_Prices_Cleaned;
 USE SCHEMA CLEANED_DATA;
 
 -- Drop the existing cleaned table if it exists
-DROP TABLE IF EXISTS CLEANED_DATA.hdb_existing_building_cleaned;
+DROP TABLE IF EXISTS CLEANED_DATA.HDB_EXISTING_BUILDING;
 
 -- 4. Create Cleaned Table using LATERAL FLATTEN to parse the features array
-CREATE OR REPLACE TABLE CLEANED_DATA.hdb_existing_building_cleaned AS
+CREATE OR REPLACE TABLE CLEANED_DATA.HDB_EXISTING_BUILDING AS
 SELECT
     -- Extract property attributes from the flattened features
-    f.value:properties:OBJECTID::INTEGER AS object_id,
-    f.value:properties:BLK_NO::STRING AS block_no,
-    f.value:properties:ST_COD::STRING AS street_code,
-    f.value:properties:ENTITYID::INTEGER AS entity_id,
-    f.value:properties:POSTAL_COD::STRING AS postal_code,
-    f.value:properties:INC_CRC::STRING AS inc_crc,
-    f.value:properties:FMEL_UPD_D::STRING AS last_updated,
+    F.VALUE:properties:OBJECTID::INTEGER AS OBJECT_ID,
+    F.VALUE:properties:BLK_NO::STRING AS BLOCK_NO,
+    F.VALUE:properties:ST_COD::STRING AS STREET_CODE,
+    F.VALUE:properties:ENTITYID::INTEGER AS ENTITY_ID,
+    F.VALUE:properties:POSTAL_COD::STRING AS POSTAL_CODE,
+    F.VALUE:properties:INC_CRC::STRING AS INC_CRC,
+    F.VALUE:properties:FMEL_UPD_D::STRING AS LAST_UPDATED,
     
     -- For numeric fields, cast to STRING first, then to NUMBER
-    TRY_TO_NUMBER(f.value:properties:"SHAPE.AREA"::STRING) AS shape_area,
-    TRY_TO_NUMBER(f.value:properties:"SHAPE.LEN"::STRING) AS shape_length,
+    TRY_TO_NUMBER(F.VALUE:properties:"SHAPE.AREA"::STRING) AS SHAPE_AREA,
+    TRY_TO_NUMBER(F.VALUE:properties:"SHAPE.LEN"::STRING) AS SHAPE_LENGTH,
     
     -- Store geometry as GEOGRAPHY type for spatial analysis
-    TO_GEOGRAPHY(f.value:geometry) AS geometry,
+    TO_GEOGRAPHY(F.VALUE:geometry) AS GEOMETRY,
     
     -- Keep geometry type for reference
-    f.value:geometry:type::STRING AS geometry_type,
+    F.VALUE:geometry:type::STRING AS GEOMETRY_TYPE,
     
     -- Extract latitude and longitude from geometry
-    ST_Y(ST_CENTROID(TO_GEOGRAPHY(f.value:geometry))) AS latitude,
-    ST_X(ST_CENTROID(TO_GEOGRAPHY(f.value:geometry))) AS longitude
-FROM RAW_DATA.hdb_existing_building,
-LATERAL FLATTEN(input => raw_data:features) f;
+    ST_Y(ST_CENTROID(TO_GEOGRAPHY(F.VALUE:geometry))) AS LATITUDE,
+    ST_X(ST_CENTROID(TO_GEOGRAPHY(F.VALUE:geometry))) AS LONGITUDE
+FROM RAW_DATA.HDB_EXISTING_BUILDING,
+LATERAL FLATTEN(input => RAW_DATA:features) F;
 
 -- 5. Verify cleaned data
-SELECT COUNT(*) FROM CLEANED_DATA.hdb_existing_building_cleaned;
+SELECT COUNT(*) FROM CLEANED_DATA.HDB_EXISTING_BUILDING;
 
 -- Check for any null postal codes or block numbers (data quality check)
 SELECT 
-    COUNT(*) AS total_records,
-    COUNT(block_no) AS blocks_with_data,
-    COUNT(postal_code) AS postal_codes_with_data,
-    COUNT(latitude) AS records_with_latitude,
-    COUNT(longitude) AS records_with_longitude
-FROM CLEANED_DATA.hdb_existing_building_cleaned;
+    COUNT(*) AS TOTAL_RECORDS,
+    COUNT(BLOCK_NO) AS BLOCKS_WITH_DATA,
+    COUNT(POSTAL_CODE) AS POSTAL_CODES_WITH_DATA,
+    COUNT(LATITUDE) AS RECORDS_WITH_LATITUDE,
+    COUNT(LONGITUDE) AS RECORDS_WITH_LONGITUDE
+FROM CLEANED_DATA.HDB_EXISTING_BUILDING;
 
 -- Preview data with coordinates
 SELECT 
-    block_no,
-    postal_code,
-    latitude,
-    longitude,
-    geometry_type
-FROM CLEANED_DATA.hdb_existing_building_cleaned
+    BLOCK_NO,
+    POSTAL_CODE,
+    LATITUDE,
+    LONGITUDE,
+    GEOMETRY_TYPE
+FROM CLEANED_DATA.HDB_EXISTING_BUILDING
 LIMIT 10;
 
 -- By Alluru Rishitha
