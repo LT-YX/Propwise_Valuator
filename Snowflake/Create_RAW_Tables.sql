@@ -118,24 +118,23 @@ SELECT COUNT(*) FROM RAW_DATA.Resale_Flat_Prices;
 --
 
 -- The below is done by Joely
--- 1. Create Raw Table with VARIANT column for GeoJSON
-CREATE OR REPLACE TABLE RAW_DATA.hdb_existing_building (
-    raw_data VARIANT
+CREATE OR REPLACE TABLE RAW_DATA.HDB_EXISTING_BUILDING (
+    RAW_DATA VARIANT
 );
 
 -- 2. Load GeoJSON file from stage
-COPY INTO RAW_DATA.hdb_existing_building
-FROM @stage_raw/HDBExistingBuilding.geojson
+COPY INTO RAW_DATA.HDB_EXISTING_BUILDING
+FROM @STAGE_RAW/HDBExistingBuilding.geojson
 FILE_FORMAT = (
     TYPE = JSON
 )
 ON_ERROR = 'CONTINUE';
 
 -- 3. Verify the load
-SELECT COUNT(*) FROM RAW_DATA.hdb_existing_building;
+SELECT COUNT(*) FROM RAW_DATA.HDB_EXISTING_BUILDING;
 
 -- Preview the raw data structure
-SELECT raw_data FROM RAW_DATA.hdb_existing_building LIMIT 5;
+SELECT RAW_DATA FROM RAW_DATA.HDB_EXISTING_BUILDING LIMIT 5;
 
 -- ============================================
 -- The below is done by Hong Yi
