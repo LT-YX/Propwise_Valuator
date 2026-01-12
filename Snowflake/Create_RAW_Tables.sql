@@ -137,311 +137,191 @@ SELECT COUNT(*) FROM RAW_DATA.HDB_EXISTING_BUILDING;
 SELECT RAW_DATA FROM RAW_DATA.HDB_EXISTING_BUILDING LIMIT 5;
 
 -- ============================================
--- The below is done by Hong Yi
+-- LOAD ALL 10 GEOJSON FILES INTO RAW_DATA
+-- Created by: Hong Yi
 -- ============================================
 
--- 1. Upload files to stage using Snowflake UI
--- 2. Once file has been uploaded, create table
--- 3. Load data from stage to table
+USE WAREHOUSE GROUP4_ASG2;
+USE DATABASE Group4_Asg2;
+USE SCHEMA RAW_DATA;
+
+-- ============================================
+-- 1. CHAS_CLINICS
+-- ============================================
+CREATE OR REPLACE TEMPORARY TABLE temp_chas_raw (raw_json VARIANT);
+
+COPY INTO temp_chas_raw 
+FROM @stage_raw/CHASClinics.geojson 
+FILE_FORMAT = (TYPE = JSON)
+ON_ERROR = 'ABORT_STATEMENT';
+
+CREATE OR REPLACE TABLE RAW_DATA.CHAS_CLINICS AS
+SELECT f.value AS location
+FROM temp_chas_raw,
+LATERAL FLATTEN(input => raw_json:features) f;
+
+SELECT 'CHAS_CLINICS' AS table_name, COUNT(*) AS records FROM RAW_DATA.CHAS_CLINICS;
 
 
--- Bus Stops - Hong Yi
--- 1. Create Raw Table for Bus Stops (CSV)
-CREATE OR REPLACE TABLE RAW_DATA.BUS_STOPS (
-    BUSSTOPCODE NUMBER(38,0),
-    ROADNAME VARCHAR(16777216),
-    DESCRIPTION VARCHAR(16777216),
-    LATITUDE NUMBER(38,14),
-    LONGITUDE NUMBER(38,14)
-);
+-- ============================================
+-- 2. COMMUNITY_CLUBS
+-- ============================================
+CREATE OR REPLACE TEMPORARY TABLE temp_cc_raw (raw_json VARIANT);
 
--- 2. Load CSV file from stage
-COPY INTO RAW_DATA.BUS_STOPS
-FROM @stage_raw/BusStops.csv
-FILE_FORMAT = csv_format
-ON_ERROR = 'CONTINUE';
+COPY INTO temp_cc_raw 
+FROM @stage_raw/CommunityClubs.geojson 
+FILE_FORMAT = (TYPE = JSON)
+ON_ERROR = 'ABORT_STATEMENT';
 
+CREATE OR REPLACE TABLE RAW_DATA.COMMUNITY_CLUBS AS
+SELECT f.value AS location
+FROM temp_cc_raw,
+LATERAL FLATTEN(input => raw_json:features) f;
 
--- Clinics - Hong Yi
--- 1. Create Raw Table for Clinics (CSV)
-CREATE OR REPLACE TABLE RAW_DATA.CLINICS (
-    NAME VARCHAR(16777216),
-    CATEGORY VARCHAR(16777216),
-    LAT NUMBER(38,7),
-    LON NUMBER(38,7),
-    BRAND VARCHAR(16777216),
-    ADDRESS VARCHAR(16777216),
-    WEBSITE VARCHAR(16777216),
-    PHONE VARCHAR(16777216)
-);
-
--- 2. Load CSV file from stage
-COPY INTO RAW_DATA.CLINICS
-FROM @stage_raw/Clinics.csv
-FILE_FORMAT = csv_format
-ON_ERROR = 'CONTINUE';
+SELECT 'COMMUNITY_CLUBS' AS table_name, COUNT(*) FROM RAW_DATA.COMMUNITY_CLUBS;
 
 
--- Hospitals - Hong Yi
--- 1. Create Raw Table for Hospitals (CSV)
-CREATE OR REPLACE TABLE RAW_DATA.HOSPITALS (
-    HOSPITAL_NAME VARCHAR(16777216),
-    ADDRESS VARCHAR(16777216),
-    POSTAL_CODE NUMBER(38,0),
-    HOSPITAL_TYPE VARCHAR(16777216),
-    LATITUDE NUMBER(38,7),
-    LONGITUDE NUMBER(38,7),
-    TOWN VARCHAR(16777216)
-);
+-- ============================================
+-- 3. ELDERCARE_SERVICES
+-- ============================================
+CREATE OR REPLACE TEMPORARY TABLE temp_eldercare_raw (raw_json VARIANT);
 
--- 2. Load CSV file from stage
-COPY INTO RAW_DATA.HOSPITALS
-FROM @stage_raw/Hospitals.csv
-FILE_FORMAT = csv_format
-ON_ERROR = 'CONTINUE';
+COPY INTO temp_eldercare_raw 
+FROM @stage_raw/EldercareServices.geojson 
+FILE_FORMAT = (TYPE = JSON)
+ON_ERROR = 'ABORT_STATEMENT';
 
+CREATE OR REPLACE TABLE RAW_DATA.ELDERCARE_SERVICES AS
+SELECT f.value AS location
+FROM temp_eldercare_raw,
+LATERAL FLATTEN(input => raw_json:features) f;
 
--- MRT Stations - Hong Yi
--- 1. Create Raw Table for MRT Stations (CSV)
-CREATE OR REPLACE TABLE RAW_DATA.MRT_STATIONS (
-    OBJECTID NUMBER(38,0),
-    STN_NAME VARCHAR(16777216),
-    STN_NO VARCHAR(16777216),
-    GEOMETRY VARCHAR(16777216),
-    LATITUDE NUMBER(38,16),
-    LONGITUDE NUMBER(38,14)
-);
-
--- 2. Load CSV file from stage
-COPY INTO RAW_DATA.MRT_STATIONS
-FROM @stage_raw/MRTStations.csv
-FILE_FORMAT = csv_format
-ON_ERROR = 'CONTINUE';
+SELECT 'ELDERCARE_SERVICES' AS table_name, COUNT(*) FROM RAW_DATA.ELDERCARE_SERVICES;
 
 
--- School Location - Hong Yi
--- 1. Create Raw Table for School Location (CSV)
-CREATE OR REPLACE TABLE RAW_DATA.SCHOOL_LOCATION (
-    SCHOOL_NAME VARCHAR(16777216),
-    URL_ADDRESS VARCHAR(16777216),
-    ADDRESS VARCHAR(16777216),
-    POSTAL_CODE NUMBER(38,0),
-    TELEPHONE_NO VARCHAR(16777216),
-    TELEPHONE_NO_2 VARCHAR(16777216),
-    FAX_NO VARCHAR(16777216),
-    FAX_NO_2 VARCHAR(16777216),
-    EMAIL_ADDRESS VARCHAR(16777216),
-    MRT_DESC VARCHAR(16777216),
-    BUS_DESC VARCHAR(16777216),
-    PRINCIPAL_NAME VARCHAR(16777216),
-    FIRST_VP_NAME VARCHAR(16777216),
-    SECOND_VP_NAME VARCHAR(16777216),
-    THIRD_VP_NAME VARCHAR(16777216),
-    FOURTH_VP_NAME VARCHAR(16777216),
-    FIFTH_VP_NAME VARCHAR(16777216),
-    SIXTH_VP_NAME VARCHAR(16777216),
-    DGP_CODE VARCHAR(16777216),
-    ZONE_CODE VARCHAR(16777216),
-    TYPE_CODE VARCHAR(16777216),
-    NATURE_CODE VARCHAR(16777216),
-    SESSION_CODE VARCHAR(16777216),
-    MAINLEVEL_CODE VARCHAR(16777216),
-    SAP_IND BOOLEAN,
-    AUTONOMOUS_IND BOOLEAN,
-    GIFTED_IND BOOLEAN,
-    IP_IND BOOLEAN,
-    MOTHERTONGUE1_CODE VARCHAR(16777216),
-    MOTHERTONGUE2_CODE VARCHAR(16777216),
-    MOTHERTONGUE3_CODE VARCHAR(16777216)
-);
+-- ============================================
+-- 4. GYMS_SG
+-- ============================================
+CREATE OR REPLACE TEMPORARY TABLE temp_gyms_raw (raw_json VARIANT);
 
--- 2. Load CSV file from stage
-COPY INTO RAW_DATA.SCHOOL_LOCATION
-FROM @stage_raw/SchoolLocation.csv
-FILE_FORMAT = csv_format
-ON_ERROR = 'CONTINUE';
+COPY INTO temp_gyms_raw 
+FROM @stage_raw/GymsSGGEOJSON.geojson 
+FILE_FORMAT = (TYPE = JSON)
+ON_ERROR = 'ABORT_STATEMENT';
+
+CREATE OR REPLACE TABLE RAW_DATA.GYMS_SG AS
+SELECT f.value AS location
+FROM temp_gyms_raw,
+LATERAL FLATTEN(input => raw_json:features) f;
+
+SELECT 'GYMS_SG' AS table_name, COUNT(*) FROM RAW_DATA.GYMS_SG;
 
 
--- Shopping Malls - Hong Yi
--- 1. Create Raw Table for Shopping Malls (CSV)
-CREATE OR REPLACE TABLE RAW_DATA.SHOPPING_MALLS (
-    NAME VARCHAR(16777216),
-    CATEGORY VARCHAR(16777216),
-    LAT NUMBER(38,7),
-    LON NUMBER(38,7),
-    BRAND VARCHAR(16777216),
-    ADDRESS VARCHAR(16777216),
-    WEBSITE VARCHAR(16777216),
-    PHONE VARCHAR(16777216)
-);
+-- ============================================
+-- 5. HAWKER_CENTRES
+-- ============================================
+CREATE OR REPLACE TEMPORARY TABLE temp_hawker_raw (raw_json VARIANT);
 
--- 2. Load CSV file from stage
-COPY INTO RAW_DATA.SHOPPING_MALLS
-FROM @stage_raw/ShoppingMalls.csv
-FILE_FORMAT = csv_format
-ON_ERROR = 'CONTINUE';
+COPY INTO temp_hawker_raw 
+FROM @stage_raw/HawkerCentresGEOJSON.geojson 
+FILE_FORMAT = (TYPE = JSON)
+ON_ERROR = 'ABORT_STATEMENT';
+
+CREATE OR REPLACE TABLE RAW_DATA.HAWKER_CENTRES AS
+SELECT f.value AS location
+FROM temp_hawker_raw,
+LATERAL FLATTEN(input => raw_json:features) f;
+
+SELECT 'HAWKER_CENTRES' AS table_name, COUNT(*) FROM RAW_DATA.HAWKER_CENTRES;
 
 
--- Shopping Mall Coordinates - Hong Yi
--- 1. Create Raw Table for Shopping Mall Coordinates (CSV)
-CREATE OR REPLACE TABLE RAW_DATA.SHOPPING_MALL_COORDINATES (
-    MALLNAME VARCHAR(16777216),
-    LATITUDE NUMBER(38,14),
-    LONGITUDE NUMBER(38,12)
-);
+-- ============================================
+-- 6. PARKS
+-- ============================================
+CREATE OR REPLACE TEMPORARY TABLE temp_parks_raw (raw_json VARIANT);
 
--- 2. Load CSV file from stage
-COPY INTO RAW_DATA.SHOPPING_MALL_COORDINATES
-FROM @stage_raw/ShoppingMallCoordinates.csv
-FILE_FORMAT = csv_format
-ON_ERROR = 'CONTINUE';
+COPY INTO temp_parks_raw 
+FROM '@stage_raw/Parks@SG.geojson' 
+FILE_FORMAT = (TYPE = JSON)
+ON_ERROR = 'ABORT_STATEMENT';
 
+CREATE OR REPLACE TABLE RAW_DATA.PARKS AS
+SELECT f.value AS location
+FROM temp_parks_raw,
+LATERAL FLATTEN(input => raw_json:features) f;
 
--- CHAS Clinics - Hong Yi
--- 1. Create Raw Table with VARIANT column for GeoJSON
--- VARIANT data type handles semi-structured data like GeoJSON
-CREATE OR REPLACE TABLE RAW_DATA.CHAS_CLINICS (
-    location VARIANT
-);
-
--- 2. Load GeoJSON file from stage
--- Use STRIP_OUTER_ARRAY=TRUE to parse each feature as a separate row
-COPY INTO RAW_DATA.CHAS_CLINICS
-FROM @stage_raw/CHASClinics.geojson
-FILE_FORMAT = (TYPE = JSON STRIP_OUTER_ARRAY = TRUE)
-ON_ERROR = 'CONTINUE';
+SELECT 'PARKS' AS table_name, COUNT(*) FROM RAW_DATA.PARKS;
 
 
--- Community Clubs - Hong Yi
--- 1. Create Raw Table with VARIANT column for GeoJSON
--- VARIANT data type handles semi-structured data like GeoJSON
-CREATE OR REPLACE TABLE RAW_DATA.COMMUNITY_CLUBS (
-    location VARIANT
-);
+-- ============================================
+-- 7. PRESCHOOLS
+-- ============================================
+CREATE OR REPLACE TEMPORARY TABLE temp_preschools_raw (raw_json VARIANT);
 
--- 2. Load GeoJSON file from stage
--- Use STRIP_OUTER_ARRAY=TRUE to parse each feature as a separate row
-COPY INTO RAW_DATA.COMMUNITY_CLUBS
-FROM @stage_raw/CommunityClubs.geojson
-FILE_FORMAT = (TYPE = JSON STRIP_OUTER_ARRAY = TRUE)
-ON_ERROR = 'CONTINUE';
+COPY INTO temp_preschools_raw 
+FROM @stage_raw/PreSchoolsLocation.geojson 
+FILE_FORMAT = (TYPE = JSON)
+ON_ERROR = 'ABORT_STATEMENT';
 
+CREATE OR REPLACE TABLE RAW_DATA.PRESCHOOLS AS
+SELECT f.value AS location
+FROM temp_preschools_raw,
+LATERAL FLATTEN(input => raw_json:features) f;
 
--- Eldercare Services - Hong Yi
--- 1. Create Raw Table with VARIANT column for GeoJSON
--- VARIANT data type handles semi-structured data like GeoJSON
-CREATE OR REPLACE TABLE RAW_DATA.ELDERCARE_SERVICES (
-    location VARIANT
-);
-
--- 2. Load GeoJSON file from stage
--- Use STRIP_OUTER_ARRAY=TRUE to parse each feature as a separate row
-COPY INTO RAW_DATA.ELDERCARE_SERVICES
-FROM @stage_raw/EldercareServices.geojson
-FILE_FORMAT = (TYPE = JSON STRIP_OUTER_ARRAY = TRUE)
-ON_ERROR = 'CONTINUE';
+SELECT 'PRESCHOOLS' AS table_name, COUNT(*) FROM RAW_DATA.PRESCHOOLS;
 
 
--- Gyms SG - Hong Yi
--- 1. Create Raw Table with VARIANT column for GeoJSON
--- VARIANT data type handles semi-structured data like GeoJSON
-CREATE OR REPLACE TABLE RAW_DATA.GYMS_SG (
-    location VARIANT
-);
+-- ============================================
+-- 8. RETAIL_PHARMACY
+-- ============================================
+CREATE OR REPLACE TEMPORARY TABLE temp_pharmacy_raw (raw_json VARIANT);
 
--- 2. Load GeoJSON file from stage
--- Use STRIP_OUTER_ARRAY=TRUE to parse each feature as a separate row
-COPY INTO RAW_DATA.GYMS_SG
-FROM @stage_raw/GymsSGGEOJSON.geojson
-FILE_FORMAT = (TYPE = JSON STRIP_OUTER_ARRAY = TRUE)
-ON_ERROR = 'CONTINUE';
+COPY INTO temp_pharmacy_raw 
+FROM '@stage_raw/Retail pharmacy locations (GEOJSON).geojson' 
+FILE_FORMAT = (TYPE = JSON)
+ON_ERROR = 'ABORT_STATEMENT';
 
+CREATE OR REPLACE TABLE RAW_DATA.RETAIL_PHARMACY AS
+SELECT f.value AS location
+FROM temp_pharmacy_raw,
+LATERAL FLATTEN(input => raw_json:features) f;
 
--- Hawker Centres - Hong Yi
--- 1. Create Raw Table with VARIANT column for GeoJSON
--- VARIANT data type handles semi-structured data like GeoJSON
-CREATE OR REPLACE TABLE RAW_DATA.HAWKER_CENTRES (
-    location VARIANT
-);
-
--- 2. Load GeoJSON file from stage
--- Use STRIP_OUTER_ARRAY=TRUE to parse each feature as a separate row
-COPY INTO RAW_DATA.HAWKER_CENTRES
-FROM @stage_raw/HawkerCentresGEOJSON.geojson
-FILE_FORMAT = (TYPE = JSON STRIP_OUTER_ARRAY = TRUE)
-ON_ERROR = 'CONTINUE';
+SELECT 'RETAIL_PHARMACY' AS table_name, COUNT(*) FROM RAW_DATA.RETAIL_PHARMACY;
 
 
--- Parks - Hong Yi
--- 1. Create Raw Table with VARIANT column for GeoJSON
--- VARIANT data type handles semi-structured data like GeoJSON
-CREATE OR REPLACE TABLE RAW_DATA.PARKS (
-    location VARIANT
-);
+-- ============================================
+-- 9. SUPERMARKETS
+-- ============================================
+CREATE OR REPLACE TEMPORARY TABLE temp_supermarkets_raw (raw_json VARIANT);
 
--- 2. Load GeoJSON file from stage
--- Use STRIP_OUTER_ARRAY=TRUE to parse each feature as a separate row
-COPY INTO RAW_DATA.PARKS
-FROM @stage_raw/Parks.geojson
-FILE_FORMAT = (TYPE = JSON STRIP_OUTER_ARRAY = TRUE)
-ON_ERROR = 'CONTINUE';
+COPY INTO temp_supermarkets_raw 
+FROM @stage_raw/SupermarketsGEOJSON.geojson 
+FILE_FORMAT = (TYPE = JSON)
+ON_ERROR = 'ABORT_STATEMENT';
 
+CREATE OR REPLACE TABLE RAW_DATA.SUPERMARKETS AS
+SELECT f.value AS location
+FROM temp_supermarkets_raw,
+LATERAL FLATTEN(input => raw_json:features) f;
 
--- Preschools - Hong Yi
--- 1. Create Raw Table with VARIANT column for GeoJSON
--- VARIANT data type handles semi-structured data like GeoJSON
-CREATE OR REPLACE TABLE RAW_DATA.PRESCHOOLS (
-    location VARIANT
-);
-
--- 2. Load GeoJSON file from stage
--- Use STRIP_OUTER_ARRAY=TRUE to parse each feature as a separate row
-COPY INTO RAW_DATA.PRESCHOOLS
-FROM @stage_raw/PreSchoolsLocation.geojson
-FILE_FORMAT = (TYPE = JSON STRIP_OUTER_ARRAY = TRUE)
-ON_ERROR = 'CONTINUE';
+SELECT 'SUPERMARKETS' AS table_name, COUNT(*) FROM RAW_DATA.SUPERMARKETS;
 
 
--- Retail Pharmacy - Hong Yi
--- 1. Create Raw Table with VARIANT column for GeoJSON
--- VARIANT data type handles semi-structured data like GeoJSON
-CREATE OR REPLACE TABLE RAW_DATA.RETAIL_PHARMACY (
-    location VARIANT
-);
+-- ============================================
+-- 10. WATER_ACTIVITIES
+-- ============================================
+CREATE OR REPLACE TEMPORARY TABLE temp_water_raw (raw_json VARIANT);
 
--- 2. Load GeoJSON file from stage
--- Use STRIP_OUTER_ARRAY=TRUE to parse each feature as a separate row
-COPY INTO RAW_DATA.RETAIL_PHARMACY
-FROM @stage_raw/RetailPharmacyLocations.geojson
-FILE_FORMAT = (TYPE = JSON STRIP_OUTER_ARRAY = TRUE)
-ON_ERROR = 'CONTINUE';
+COPY INTO temp_water_raw 
+FROM '@stage_raw/WaterActivities@SG.geojson' 
+FILE_FORMAT = (TYPE = JSON)
+ON_ERROR = 'ABORT_STATEMENT';
 
+CREATE OR REPLACE TABLE RAW_DATA.WATER_ACTIVITIES AS
+SELECT f.value AS location
+FROM temp_water_raw,
+LATERAL FLATTEN(input => raw_json:features) f;
 
--- Supermarkets - Hong Yi
--- 1. Create Raw Table with VARIANT column for GeoJSON
--- VARIANT data type handles semi-structured data like GeoJSON
-CREATE OR REPLACE TABLE RAW_DATA.SUPERMARKETS (
-    location VARIANT
-);
-
--- 2. Load GeoJSON file from stage
--- Use STRIP_OUTER_ARRAY=TRUE to parse each feature as a separate row
-COPY INTO RAW_DATA.SUPERMARKETS
-FROM @stage_raw/SupermarketsGEOJSON.geojson
-FILE_FORMAT = (TYPE = JSON STRIP_OUTER_ARRAY = TRUE)
-ON_ERROR = 'CONTINUE';
+SELECT 'WATER_ACTIVITIES' AS table_name, COUNT(*) FROM RAW_DATA.WATER_ACTIVITIES;
 
 
--- Water Activities - Hong Yi
--- 1. Create Raw Table with VARIANT column for GeoJSON
--- VARIANT data type handles semi-structured data like GeoJSON
-CREATE OR REPLACE TABLE RAW_DATA.WATER_ACTIVITIES (
-    location VARIANT
-);
-
--- 2. Load GeoJSON file from stage
--- Use STRIP_OUTER_ARRAY=TRUE to parse each feature as a separate row
-COPY INTO RAW_DATA.WATER_ACTIVITIES
-FROM @stage_raw/WaterActivities@SG.geojson
-FILE_FORMAT = (TYPE = JSON STRIP_OUTER_ARRAY = TRUE)
-ON_ERROR = 'CONTINUE';
