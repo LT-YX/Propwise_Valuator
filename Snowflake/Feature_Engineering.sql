@@ -7,11 +7,43 @@ SELECT * FROM CLEANED_DATA.HDB_Price_Range;
 
 -- HDB Property Info - Lv
 CREATE OR REPLACE TABLE FINAL_DATA.HDB_Property_Info AS
-SELECT * FROM CLEANED_DATA.HDB_Property_Info;
+SELECT *,
+    TRIM(BLK_NO || ' ' || STREET || ' Singapore') AS ADDRESS,
+    (99 - (EXTRACT(YEAR FROM CURRENT_DATE()) - YEAR_COMPLETED))::NUMBER(3,0) AS REMAINING_LEASE
+FROM CLEANED_DATA.HDB_Property_Info; 
 
-ALTER TABLE CLEANED_DATA.HDB_Property_Info
-ADD COLUMN REMAINING_LEASE NUMBER(3,0) 
-AS (99 - (EXTRACT(YEAR FROM CURRENT_DATE()) - YEAR_COMPLETED));
+-- Added postal codes, latitude, longitude from OneMapAPI in Python
+-- Those columns will now be added to the table
+
+CREATE OR REPLACE TABLE RAW_DATA.HDB_Enrichment(
+    ADDRESS STRING,
+    POSTAL_CODE STRING,
+    LATITUDE FLOAT,
+    LONGITUDE FLOAT
+);
+COPY INTO HDB_Enrichment
+FROM(
+    SELECT
+    $11,
+    $14,
+    $12,
+    $13
+FROM @stage_raw/HDBPropertyInformation_Filled.csv (FILE_FORMAT => csv_format)
+)
+ON_ERROR = 'CONTINUE';
+
+CREATE OR REPLACE TABLE FINAL_DATA.HDB_PROPERTY_INFO_ENRICHED AS
+SELECT
+    p.*,
+    e.postal_code AS postal_code,
+    e.latitude AS latitude,
+    e.longitude AS longitude
+FROM FINAL_DATA.HDB_PROPERTY_INFO p
+LEFT JOIN HDB_ENRICHMENT e
+    ON UPPER(TRIM(p.address)) = UPPER(TRIM(e.address));
+
+-- Drop HDB_Enrichment Table
+DROP TABLE RAW_DATA.HDB_Enrichment;
 
 -- HDB Resale Index - Lv
 CREATE OR REPLACE TABLE FINAL_DATA.HDB_Resale_Index AS
