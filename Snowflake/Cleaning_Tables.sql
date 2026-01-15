@@ -120,7 +120,7 @@ FROM RAW_DATA.Resale_Flat_Prices;
 -- Since the files were combined in the RAW stage, this step is for final feature selection/view
 USE SCHEMA FINAL_DATA;
 
-CREATE OR REPLACE VIEW FINAL_DATA.MASTER_RESALE_DATA AS
+CREATE OR REPLACE TABLE FINAL_DATA.HDB_RESALE_PRICES AS
 SELECT
     sale_date,
     town,
