@@ -45,7 +45,10 @@ SELECT
     SPLIT(year_quarter, '-')[0]::INTEGER AS year, 
     SPLIT(year_quarter, '-')[1]::STRING AS quarter,
     town,
-    flat_type,
+    CASE 
+        WHEN CONTAINS(flat_type,'-') THEN (SPLIT(flat_type, '-')[0] || ' ' || UPPER(SPLIT(flat_type, '-')[1]))
+        ELSE flat_type
+    END AS flat_type,
     CASE
         WHEN LOWER(price) IN ('na', '-') THEN NULL
         ELSE price::FLOAT
