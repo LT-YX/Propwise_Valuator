@@ -50,8 +50,14 @@ SELECT
     END AS price,
 FROM RAW_DATA.HDB_MEDIAN_RESALE_PRICE;
 
--- Antozesslyn
+
+-- ============================================
+-- The following is done by Antozesslyn
 -- Data Cleaning and Final Table Creation
+
+USE WAREHOUSE GROUP4_ASG2;
+USE DATABASE Group4_Asg2;
+USE SCHEMA RAW_DATA; 
 
 -- Data Quality Checks
 -- Check for null values  
@@ -71,7 +77,7 @@ SELECT
 FROM RAW_DATA.Resale_Flat_Prices
 GROUP BY month, town, block, street_name, resale_price
 HAVING COUNT(*) > 1;
-
+-- Drop duplicates at the end
 
 
 -- Create the Cleaned Table and Perform Feature Engineering
@@ -80,7 +86,13 @@ USE SCHEMA CLEANED_DATA;
 CREATE OR REPLACE TABLE CLEANED_DATA.Resale_Flat_Prices_Cleaned AS
 SELECT
     -- Convert 'month' ('2015-01') to a DATE type
-    TRY_TO_DATE(month, 'YYYY-MM') AS sale_date,
+    -- TRY_TO_DATE(month, 'YYYY-MM') AS sale_date,
+    -- Split to year and month seperately
+    CAST(SPLIT_PART(month, '-', 1) AS INTEGER) AS sale_year,
+    CAST(SPLIT_PART(month, '-', 2) AS INTEGER) AS sale_month,
+
+    -- Feature engineering : create address
+    block || ' ' || street_name AS address,
     town,
     flat_type,
     block,
@@ -114,7 +126,14 @@ CASE
     (YEAR(TRY_TO_DATE(month, 'YYYY-MM')) - TRY_TO_NUMBER(lease_commence_date)) AS flat_age
 
     
-FROM RAW_DATA.Resale_Flat_Prices;
+FROM RAW_DATA.Resale_Flat_Prices
+
+-- Only keep first original row of duplicate sets
+-- Number them with a index and only keep 1
+QUALIFY ROW_NUMBER() OVER (
+    PARTITION BY month, town, block, street_name, resale_price 
+    ORDER BY month
+) = 1;
 
 -- Create the Final Joined/Consolidated Table
 -- Since the files were combined in the RAW stage, this step is for final feature selection/view
@@ -122,7 +141,10 @@ USE SCHEMA FINAL_DATA;
 
 CREATE OR REPLACE TABLE FINAL_DATA.HDB_RESALE_PRICES AS
 SELECT
-    sale_date,
+    -- sale_date,
+    sale_year,
+    sale_month,
+    address,
     town,
     flat_type,
     storey_range,
@@ -136,6 +158,27 @@ SELECT
     street_name,
     lease_commence_year
 FROM CLEANED_DATA.Resale_Flat_Prices_Cleaned;
+
+
+-- Final duplicate check
+SELECT 
+    sale_year, 
+    sale_month, 
+    town, 
+    block, 
+    street_name, 
+    resale_price, 
+    COUNT(*) as duplicate_count
+FROM FINAL_DATA.HDB_RESALE_PRICES
+GROUP BY sale_year, sale_month, town, block, street_name, resale_price
+HAVING COUNT(*) > 1;
+
+-- Suspend warehouse 
+ALTER WAREHOUSE GROUP4_ASG2 SUSPEND;
+
+-- ============================================
+
+
 
 -- The below is done by Joely
 USE SCHEMA CLEANED_DATA;
