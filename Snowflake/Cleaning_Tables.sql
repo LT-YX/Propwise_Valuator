@@ -4,13 +4,15 @@ USE DATABASE Group4_Asg2;
 -- Cleaning HDB_Price_Range - Lv
 --   Create Table for Cleaning in Cleaned Data Schema
 CREATE OR REPLACE TABLE CLEANED_DATA.HDB_Price_Range AS
-SELECT * FROM RAW_DATA.HDB_Price_Range;
+SELECT 
+    FINANCIAL_YEAR AS YEAR,
+    TOWN,
+    REGEXP_REPLACE(room_type, '[^a-zA-Z0-9]', ' ') AS ROOM_TYPE,
+    MIN_SELLING_PRICE,
+    MAX_SELLING_PRICE
+FROM RAW_DATA.HDB_Price_Range;
 
---   Drop Irrelevant Columns
-ALTER TABLE CLEANED_DATA.HDB_PRICE_RANGE
-DROP COLUMN MIN_SELLING_PRICE_LESS_AHG_SHG, MAX_SELLING_PRICE_LESS_AHG_SHG;
-
---   Change Data Types to more suitable ones
+--   Remove - from price columns
 DELETE FROM CLEANED_DATA.HDB_PRICE_RANGE
 WHERE REGEXP_LIKE(MIN_SELLING_PRICE, '^-+$')
    OR REGEXP_LIKE(MAX_SELLING_PRICE, '^-+$');
