@@ -83,7 +83,15 @@ FILE_FORMAT = csv_format
 ON_ERROR = 'CONTINUE';
 
 -- 
+-- ============================================
 -- The following part is done by Antozesslyn
+
+-- Create Raw Table and Load Data
+-- Set Context
+USE WAREHOUSE GROUP4_ASG2;
+USE DATABASE Group4_Asg2;
+USE SCHEMA RAW_DATA;
+
 -- Create Raw Table for ALL Resale Price Data
 -- All columns are initially set to STRING to prevent load errors
 CREATE OR REPLACE TABLE RAW_DATA.Resale_Flat_Prices (
@@ -115,8 +123,12 @@ ON_ERROR = 'CONTINUE';
 -- Check the total number of records loaded to double check
 SELECT COUNT(*) FROM RAW_DATA.Resale_Flat_Prices;
 
---
 
+-- Suspend warehouse 
+ALTER WAREHOUSE GROUP4_ASG2 SUSPEND;
+-- ============================================
+
+-- 
 -- The below is done by Joely
 CREATE OR REPLACE TABLE RAW_DATA.HDB_EXISTING_BUILDING (
     RAW_DATA VARIANT
