@@ -1,0 +1,93 @@
+name: Snowflake CI/CD Deploy
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'Snowflake/**'
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+    
+    - name: Setup Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+    
+    - name: Install dependencies
+      run: pip install snowflake-connector-python cryptography
+    
+    - name: Deploy to Snowflake
+      env:
+        SNOWFLAKE_ACCOUNT: ${{ secrets.SNOWFLAKE_ACCOUNT }}
+        SNOWFLAKE_USER: ${{ secrets.SNOWFLAKE_USER }}
+        SNOWFLAKE_ROLE: ${{ secrets.SNOWFLAKE_ROLE }}
+        SNOWFLAKE_WAREHOUSE: ${{ secrets.SNOWFLAKE_WAREHOUSE }}
+        SNOWFLAKE_DATABASE: ${{ secrets.SNOWFLAKE_DATABASE }}
+        SNOWFLAKE_PRIVATE_KEY: ${{ secrets.SNOWFLAKE_PRIVATE_KEY }}
+      run: |
+        python << 'EOF'
+        import os
+        import snowflake.connector
+        from cryptography.hazmat.backends import default_backend
+        from cryptography.hazmat.primitives import serialization
+
+        private_key_pem = os.environ['SNOWFLAKE_PRIVATE_KEY'].encode()
+        p_key = serialization.load_pem_private_key(private_key_pem, password=None, backend=default_backend())
+        pkb = p_key.private_bytes(encoding=serialization.Encoding.DER, format=serialization.PrivateFormat.PKCS8, encryption_algorithm=serialization.NoEncryption())
+        
+        account = os.environ['SNOWFLAKE_ACCOUNT'].strip().replace('.snowflakecomputing.com', '')
+        
+        print(f"✅ Connecting to Snowflake account: {account}")
+        
+        conn = snowflake.connector.connect(
+            account=account,
+            user=os.environ['SNOWFLAKE_USER'],
+            role=os.environ['SNOWFLAKE_ROLE'],
+            warehouse=os.environ['SNOWFLAKE_WAREHOUSE'],
+            database=os.environ['SNOWFLAKE_DATABASE'],
+            private_key=pkb
+        )
+        
+        cursor = conn.cursor()
+        
+        cursor.execute("CREATE SCHEMA IF NOT EXISTS SCHEMACHANGE")
+        print("✅ Schema SCHEMACHANGE created")
+        
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS SCHEMACHANGE.CHANGE_HISTORY (
+                VERSION VARCHAR(50),
+                DESCRIPTION VARCHAR(200),
+                SCRIPT VARCHAR(1000),
+                SCRIPT_TYPE VARCHAR(1),
+                CHECKSUM VARCHAR(200),
+                EXECUTION_TIME NUMBER,
+                STATUS VARCHAR(10),
+                INSTALLED_BY VARCHAR(100),
+                INSTALLED_ON TIMESTAMP_LTZ
+            )
+        """)
+        print("✅ Table CHANGE_HISTORY created")
+        
+        cursor.execute("""
+            INSERT INTO SCHEMACHANGE.CHANGE_HISTORY 
+            VALUES ('1.0', 'Propwise CI/CD deployment', 'snowflake-deploy.yml', 'V', 'N/A', 0, 'SUCCESS', CURRENT_USER(), CURRENT_TIMESTAMP())
+        """)
+        print("✅ Deployment record inserted")
+        
+        cursor.execute("SELECT COUNT(*) FROM SCHEMACHANGE.CHANGE_HISTORY")
+        count = cursor.fetchone()[0]
+        print(f"✅ Total deployments: {count}")
+        
+        cursor.close()
+        conn.close()
+        
+        print("🎉 Propwise Snowflake deployment successful!")
+        EOF

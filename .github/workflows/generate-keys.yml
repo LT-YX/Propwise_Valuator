@@ -1,0 +1,31 @@
+name: Generate Snowflake Keys
+
+on:
+  workflow_dispatch:
+
+jobs:
+  generate-keys:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Generate SSH Keys
+      run: |
+        openssl genrsa -out rsa_key.pem 2048
+        openssl rsa -in rsa_key.pem -pubout -outform DER | openssl base64 -A > rsa_key.pub
+        
+        echo "=========================================="
+        echo "PRIVATE KEY (copy EVERYTHING including BEGIN/END):"
+        echo "=========================================="
+        cat rsa_key.pem
+        echo ""
+        echo ""
+        echo "=========================================="
+        echo "PUBLIC KEY (copy this):"
+        echo "=========================================="
+        cat rsa_key.pub
+        echo ""
+        echo ""
+        echo "=========================================="
+        echo "Run in Snowflake:"
+        echo "ALTER USER PEWPEWWGUN SET RSA_PUBLIC_KEY='$(cat rsa_key.pub)';"
+        echo "=========================================="
