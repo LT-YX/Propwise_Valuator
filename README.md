@@ -2,7 +2,8 @@
 (Insert Description Here)
 
 ### Important Links
-Link to Trello Board: 
+Link to Trello Board: [https://trello.com/invite/b/69245bc27e74602b13091001/ATTI85ca6c923be2873e32cab67a48253d3b574FF329/propwise](url)
+Link to Recordings: 
 
 ## Table of Contents
 
@@ -18,8 +19,7 @@ Propwise aims to (Insert objectives)
 
 ## Data Pipeline Workflow
 ### Datasets
-(Link to datasets and introduction of them)
-
+#### Raw Data
 HDB Resale Flat Prices [https://data.gov.sg/collections/189/view] 
 Resale Flat Prices Based On Registration Date From Jan 2015 to Dec 2016 & Resale Flat Prices Based On Registration Date From Jan 2017 onwards
 - Transacted prices of HDB resale flats based on registration date 
@@ -111,8 +111,23 @@ Bus Stops Dataset [https://datamall2.mytransport.sg/ltaodataservice/BusStops](ur
 -  Initial File Type: json
 -  Initial Features: BUSSTOPCOD, DESCRIPTION, LATITUDE, LONGITUDE, ROADNAME
 
+### Data Migration
+
+### Data Cleaning 
+
+### Feature Engineering 
+
+### Joining of Data
+
 ### Final Data
+#### HDB Amenity Master Data
+#### HDB Price Master
+#### Propwise Master Data
+
+### Continuous Integration & Continuous Deployment
 
 ## Machine Learning Model
+The final selected model was a XGBoost Regressor. [Insert description]
 
 ## Streamlit App 
+The streamlit app built on snowflake contains the following features:
