@@ -98,35 +98,56 @@ st.set_page_config(
 #     """, unsafe_allow_html=True)
 
 
-# Maroon & Cream Theme Styling
+# Custom styling for red and white theme 
 st.markdown("""
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
         
-        /* 1. Global Backgrounds */
+        /* 1. GLOBAL BACKGROUNDS */
         .stApp, [data-testid="stAppViewContainer"], [data-testid="stHeader"] {
-            background-color: #FDFBF0 !important; /* Cream Main Body */
+            background-color: #FDFBF0 !important; 
             font-family: 'Inter', sans-serif;
         }
 
-        /* 2. Sidebar - Fixed to match Maroon/Cream Theme */
+        /* 2. SIDEBAR CONTROL PANEL */
         [data-testid="stSidebar"] {
-            background-color: #800000 !important; /* Maroon Sidebar */
-            border-right: 1px solid #5C0000 !important;
+            background-color: #FDFBF0 !important; 
+            border-right: 1px solid #800000 !important;
         }
         
-        /* Sidebar Text & Icons to White */
-        [data-testid="stSidebar"] h2, [data-testid="stSidebar"] p, 
-        [data-testid="stSidebar"] span, [data-testid="stSidebar"] label {
-            color: #FFFFFF !important;
-        }
-
-        /* 3. Global Maroon Text (for Cream background areas) */
-        h1, h2, h3, h4, h5, h6, p, label, span, .stMarkdown {
+        [data-testid="stSidebar"] p, [data-testid="stSidebar"] span, [data-testid="stSidebar"] label, [data-testid="stSidebar"] h1, [data-testid="stSidebar"] h2 {
             color: #800000 !important;
         }
 
-        /* 4. Dropdowns, Inputs, & Number Pickers */
+        div[data-testid="stRadio"] label[data-selected="true"] p {
+            color: #FFFFFF !important;
+            background-color: #800000;
+            border-radius: 6px;
+            padding: 4px 12px;
+            width: 100%;
+        }
+
+        [data-testid="stSidebar"] div.stAlert {
+            background-color: #800000 !important;
+            color: #FFFFFF !important;
+            border: 1px solid #5C0000 !important;
+            border-radius: 12px !important;
+        }
+        [data-testid="stSidebar"] div.stAlert p {
+            color: #FFFFFF !important;
+        }
+
+        /* 3. MAIN PAGE LABELS & HEADERS */
+        h1, h2, h3, h4, .stMarkdown {
+            color: #800000 !important;
+        }
+        
+        label[data-testid="stWidgetLabel"] p {
+            color: #800000 !important;
+            font-weight: 600 !important;
+        }
+
+        /* 4. DROPDOWNS & INPUT BOXES */
         div[data-baseweb="select"] > div, 
         div[data-baseweb="input"] > div,
         div[data-testid="stNumberInput"] > div,
@@ -136,82 +157,175 @@ st.markdown("""
             border-radius: 8px !important;
         }
 
-        /* Force ALL input text to be White */
-        div[data-baseweb="select"] *, 
-        div[data-baseweb="input"] *, 
-        input {
+        input, div[data-baseweb="select"] * {
             color: #FFFFFF !important;
             -webkit-text-fill-color: #FFFFFF !important;
         }
 
-        /* 5. Expanders - Fixing the dark header in screenshot */
-        .streamlit-expanderHeader {
+        div[data-baseweb="popover"] ul {
+            background-color: #800000 !important;
+            border: 1px solid #5C0000 !important;
+        }
+        div[data-baseweb="popover"] li {
             background-color: #800000 !important;
             color: #FFFFFF !important;
-            border: none !important;
         }
-        .streamlit-expanderHeader svg {
-            fill: #FFFFFF !important;
-        }
-
-        /* 6. Slider - FIXED THE BLUE TRACK */
-        /* The Active Track (Left side of handle) */
-        div[data-testid="stSlider"] [data-baseweb="slider"] > div > div {
-            background-color: #800000 !important;
-        }
-        /* The Inactive Track (Right side) */
-        div[data-testid="stSlider"] [data-baseweb="slider"] > div {
-            background-color: #D1CBB3 !important;
-        }
-        /* The Handle */
-        div[data-testid="stSlider"] [role="slider"] {
-            background-color: #800000 !important;
-            border: 2px solid #FFFFFF !important;
+        div[data-baseweb="popover"] li:hover {
+            background-color: #5C0000 !important;
         }
 
-        /* 7. Metric Cards */
-        div[data-testid="stMetric"] {
-            background-color: #800000 !important;
-            border-radius: 12px !important;
-        }
-        [data-testid="stMetricValue"] {
-            color: #FFFFFF !important;
-        }
-        [data-testid="stMetricLabel"] p {
-            color: #FDFBF0 !important;
-        }
-
-        /* 8. Buttons */
+        /* 5. BUTTONS & ICONS */
         .stButton>button {
             background-color: #800000 !important;
             color: #FFFFFF !important;
             border: 2px solid #FDFBF0 !important;
             border-radius: 10px;
+            width: 100%;
+            font-weight: 600 !important;
+            padding: 0.6rem 0 !important;
         }
         .stButton>button:hover {
             background-color: #5C0000 !important;
             border-color: #FFFFFF !important;
         }
-        
-        /* Info boxes in sidebar */
-        [data-testid="stSidebar"] div.stAlert {
-            background-color: rgba(255, 255, 255, 0.1) !important;
+
+        div[data-testid="stNumberInput"] button {
+            background-color: #800000 !important;
+            border: none !important;
+        }
+        div[data-testid="stNumberInput"] button svg {
+            fill: #FFFFFF !important;
+        }
+
+        /* 6. EXPANDERS */
+        .streamlit-expanderHeader {
+            background-color: #800000 !important;
             color: #FFFFFF !important;
-            border: 1px solid rgba(255, 255, 255, 0.2) !important;
+            border-radius: 8px !important;
+        }
+        .streamlit-expanderHeader svg {
+            fill: #FFFFFF !important;
+        }
+
+        /* 7. TOAST NOTIFICATIONS */
+        [data-testid="stToast"] {
+            background-color: #FDFBF0 !important;
+            border: 1px solid #800000 !important;
+            border-radius: 10px !important;
+        }
+        [data-testid="stToast"] p {
+            color: #800000 !important;
+            font-weight: 600 !important;
+        }
+        [data-testid="stToast"] svg {
+            fill: #800000 !important;
+        }
+
+        /* 8. GLOBAL INFO/SUCCESS/WARNING BOXES */
+        div.stAlert {
+            background-color: #800000 !important;
+            color: #FFFFFF !important;
+            border: 1px solid #5C0000 !important;
+            border-radius: 12px !important;
+        }
+        div.stAlert p, div.stAlert h1, div.stAlert h2, div.stAlert h3 {
+            color: #FFFFFF !important;
+        }
+        div.stAlert svg {
+            fill: #FFFFFF !important;
+        }
+        /* 9. SELECTBOX PERFECTION */
+        /* Targets the label text specifically for selectboxes */
+        div[data-testid="stSelectbox"] label p {
+            color: #800000 !important;
+            font-weight: 600 !important;
+        }
+
+        /* Targets the placeholder and selected text visibility */
+        div[data-testid="stSelectbox"] div[data-baseweb="select"] > div {
+            color: #FFFFFF !important;
+        }
+        /* 10. SLIDER PERFECTION (Maroon Track & Handle) */
+        div[data-testid="stSlider"] [data-baseweb="slider"] > div > div {
+            background-color: #800000 !important;
+        }
+        div[data-testid="stSlider"] [data-baseweb="slider"] [role="slider"] {
+            background-color: #800000 !important;
+            border: 2px solid #FFFFFF !important;
+        }
+        /* Style the range values and labels below the slider */
+        div[data-testid="stSlider"] [data-testid="stWidgetLabel"] p {
+            color: #800000 !important;
+        }
+        /* 11. ADVANCED SEARCH EXPANDER (Full Maroon/White) */
+        /* Outer border and main container */
+        [data-testid="stExpander"] {
+            border: 2px solid #800000 !important;
+            border-radius: 12px !important;
+            background-color: #FDFBF0 !important;
+            overflow: hidden !important;
+        }
+
+        /* Expander Header to Solid Maroon */
+        [data-testid="stExpander"] summary {
+            background-color: #800000 !important;
+            border-bottom: 2px solid #800000 !important;
+            padding: 5px 15px !important;
+        }
+
+        /* Forces Header Text and Icon to White */
+        [data-testid="stExpander"] summary p, 
+        [data-testid="stExpander"] summary svg {
+            color: #FFFFFF !important;
+            fill: #FFFFFF !important;
+        }
+        
+        /* Ensures the hover state doesn't turn it back to dark grey */
+        [data-testid="stExpander"] summary:hover {
+            background-color: #5C0000 !important;
+        }
+        /* 12. METRIC PERFECTION (Maroon Font) */
+        /* Targets the main large number ($450K, 12, etc.) */
+        [data-testid="stMetricValue"] {
+            color: #800000 !important;
+            font-weight: 700 !important;
+        }
+
+        /* Targets the label text above the number (Saved Properties, etc.) */
+        [data-testid="stMetricLabel"] p {
+            color: #800000 !important;
+            opacity: 0.8; /* Keeps labels slightly softer than the main numbers */
+            font-weight: 600 !important;
+        }
+        /* 13. SUCCESS BOX */
+        /* Targets the main container of st.success */
+        div[data-testid="stNotification"] {
+            background-color: #800000 !important;
+            color: #FFFFFF !important;
+            border: 1px solid #5C0000 !important;
+            border-radius: 12px !important;
+            box-shadow: 0 4px 12px rgba(128,0,0,0.1) !important;
+        }
+
+        /* Targets the text inside the success box to force it to White */
+        div[data-testid="stNotification"] .stMarkdown p {
+            color: #FFFFFF !important;
+            font-weight: 600 !important;
+            font-size: 1.05rem !important;
+        }
+
+        /* Targets the success icon (the checkmark) to turn it White */
+        div[data-testid="stNotification"] svg {
+            fill: #FFFFFF !important;
+        }
+
+        /* Ensures the close button (x) is also visible/white */
+        div[data-testid="stNotification"] button svg {
+            fill: #FFFFFF !important;
+            opacity: 0.8;
         }
     </style>
     """, unsafe_allow_html=True)
-
-
-
-
-
-
-
-
-
-
-
 
 # FUNCTIONS
 # Get the current credentials
@@ -358,97 +472,46 @@ if page == "Price Prediction":
             st.caption("No map to show yet – try a valid HDB town or address.")
 
     # 4. Prediction Logic & Results
+        
     _, btn_col, _ = st.columns([1, 1, 1])
-    
     if btn_col.button("🔮 Predict Resale Price", type="primary", use_container_width=True):
         low, high = get_price_prediction(town, flat_type, storey_range, floor_area, lat, lon)
         st.toast('Valuation Complete!', icon='✅')
-        # st.markdown(f"""
-        #     <div class="valuation-card" style="
-        #         background: linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%); 
-        #         padding: 60px 40px; 
-        #         border-radius: 15px; 
-        #         text-align: center; 
-        #         border: 1px solid rgba(255, 255, 255, 0.2);
-        #         box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-        #         margin: 20px 0;">
-        #         <p style="
-        #             margin: 0; 
-        #             font-weight: 700; 
-        #             letter-spacing: 0.2em; 
-        #             font-size: 1.1rem; 
-        #             color: #FFFFFF !important;
-        #             text-transform: uppercase;
-        #             opacity: 0.9;">
-        #             Estimated Market Value
-        #         </p>
-        #         <h1 style="
-        #             margin: 20px 0; 
-        #             font-size: 4.5rem; 
-        #             color: #FFFFFF !important;
-        #             font-weight: 800;
-        #             text-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-        #             ${low:,.0f} — ${high:,.0f}
-        #         </h1>
-        #         <div style="
-        #             height: 3px; 
-        #             background-color: #60A5FA; 
-        #             width: 80px; 
-        #             margin: 30px auto;
-        #             border-radius: 2px;">
-        #         </div>
-        #         <p style="
-        #             margin: 0; 
-        #             color: #FFFFFF; 
-        #             opacity: 0.85;
-        #             font-size: 1rem;
-        #             font-style: italic;">
-        #             Data-driven prediction for 2026 Resale Market Trends
-        #         </p>
-        #     </div>
-        # """, unsafe_allow_html=True)
+        # st.success(f"Predicted Resale Price: **${low:,.0f} - ${high:,.0f}**")
         st.markdown(f"""
-                <div style="
-                    background-color: #800000; 
-                    padding: 50px 20px; 
-                    border-radius: 20px; 
-                    text-align: center; 
-                    border: 4px solid #FDFBF0; 
-                    margin: 20px 0;
-                    box-shadow: 0 10px 20px rgba(0,0,0,0.15);">
-                    <p style="
-                        margin: 0; 
-                        font-weight: 700; 
-                        letter-spacing: 0.15em; 
-                        font-size: 1.1rem; 
-                        color: #FFFFFF !important;
-                        text-transform: uppercase;">
-                        Estimated Market Value
-                    </p>
-                    <h1 style="
-                        margin: 20px 0; 
-                        font-size: 4.5rem; 
-                        color: #FFFFFF !important;
-                        font-weight: 800;">
-                        ${low:,.0f} — ${high:,.0f}
-                    </h1>
-                    <div style="
-                        height: 3px; 
-                        background-color: #FFFFFF; 
-                        width: 80px; 
-                        margin: 20px auto;
-                        opacity: 0.5;">
-                    </div>
-                    <p style="
-                        margin: 0; 
-                        color: #FFFFFF !important; 
-                        font-size: 1rem;
-                        opacity: 0.9;">
-                        Data-driven prediction for 2026 Resale Market Trends
-                    </p>
-                </div>
-            """, unsafe_allow_html=True)
-        st.markdown("<br>", unsafe_allow_html=True)
+            <div style="
+                background-color: #800000 !important;
+                padding: 30px;
+                border-radius: 15px;
+                border: 2px solid #FDFBF0;
+                text-align: center;
+                margin: 20px 0;
+                box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            ">
+                <p style="
+                    margin: 0 !important; 
+                    font-size: 1.2rem !important; 
+                    font-weight: 600 !important; 
+                    color: #FFFFFF !important;
+                    display: block !important;
+                    letter-spacing: 0.05em;
+                ">
+                    Predicted Resale Price
+                </p>
+                <h2 style="
+                    margin: 10px 0 !important; 
+                    font-size: 2.8rem !important; 
+                    font-weight: 800 !important;
+                    color: #FFFFFF !important; 
+                    display: block !important;
+                    -webkit-text-fill-color: #FFFFFF !important;
+                ">
+                    ${low:,.0f} — ${high:,.0f}
+                </h2>
+            </div>
+        """, unsafe_allow_html=True)
+
+        st.caption("Median from similar sales ±5%. Replace w/ ML model.")
 
         # 5. Metrics
         nearby = get_nearby_insights(lat, lon)
@@ -460,9 +523,6 @@ if page == "Price Prediction":
 
 
 
-
-
-
     # st.title("🏠 PropWise Smart Valuator")
     # st.markdown("""
     #     <div class="page-header">
@@ -471,47 +531,6 @@ if page == "Price Prediction":
     #     </div>
     # """, unsafe_allow_html=True)
     # st.markdown("Predict Your HDB Resale Price")
-
-
-    # # Prediction area
-    # # btn_col1, btn_col2, btn_col3 = st.columns([1, 2, 1])
-    # _, btn_col, _ = st.columns([1, 1, 1])
-    # if btn_col.button("🔮 Predicted Resale Price", type="primary", use_container_width=True):
-    #     low, high = get_price_prediction(town, flat_type, storey_range, floor_area, lat, lon)
-    #     st.toast('Valuation Complete!', icon='✅')
-    #     # Replace your Prediction Result Card code with this:
-    #     st.markdown(f"""
-    #         <div style="background-color:#790222; padding:50px; border-radius:20px; text-align:center; border: 4px solid #D4AF37; margin: 20px 0;">
-    #             <p class="valuation-subtext" style="margin:0; font-weight:600; letter-spacing: 0.15em; font-size: 1.1rem;">ESTIMATED MARKET VALUE</p>
-    #             <h1 class="valuation-text" style="margin:15px 0; font-size: 4rem;">${low:,.0f} — ${high:,.0f}</h1>
-    #             <div style="height:3px; background-color:#D4AF37; width:80px; margin: 20px auto;"></div>
-    #             <p style="margin:0; color:#FFFFFF; font-size: 1rem; opacity: 0.8;">Data-driven prediction for 2026 Resale Market Trends</p>
-    #         </div>
-    #     """, unsafe_allow_html=True)
-
-
-        
-    #     st.markdown("<br>", unsafe_allow_html=True)
-
-            # st.balloons()
-            # st.markdown(f"""
-            #     <div style="background: linear-gradient(135deg, #EFF6FF 0%, #DBEAFE 100%); 
-            #                 padding:35px; border-radius:15px; border-left: 8px solid #2563EB; 
-            #                 text-align:center; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);">
-            #         <p style="margin:0; color:#1E40AF; font-weight:700; text-transform:uppercase; letter-spacing:0.05em;">Estimated Value Range</p>
-            #         <h1 style="margin:10px 0; color:#1E3A8A; font-size: 3.5rem;">${low:,.0f} — ${high:,.0f}</h1>
-            #         <p style="margin:0; color:#1E40AF; font-size:0.9rem; opacity:0.8;">Based on 2024-2026 Resale Market Trends</p>
-            #     </div>
-            # """, unsafe_allow_html=True)
-            
-        #     # Metrics
-        # nearby = get_nearby_insights(lat, lon)
-        # if not nearby.empty:
-        #     m1, m2, m3 = st.columns(3)
-        #     m1.metric("Nearby Comparable Sales", len(nearby))
-        #     m2.metric("Market Average (Area)", f"${nearby['RESALE_PRICE'].mean():,.0f}")
-        #     m3.metric("Confidence Score", "High", "94%")
-
 
     #     st.info("📍 Geospatial features auto-calculated via OneMap + Snowflake.")
     # if st.button("🔮 Predict Price", type="primary"):
@@ -556,7 +575,6 @@ elif page == "Amenities Explorer":
         st.pydeck_chart(pdk.Deck(
             map_style='mapbox://styles/mapbox/streets-v11',
             initial_view_state=view_state,
-            api_keys={'mapbox': 'pk.eyJ1IjoibHZ0eXgiLCJhIjoiY21rcGpnNDFiMGRydDNlc2FhdXh2aW83NCJ9._zkoXyM6FbILkvw6RfM3UQ'}, 
             layers=[] 
         ), use_container_width=True)
         
@@ -590,9 +608,9 @@ elif page == "Amenities Explorer":
 else:
     st.markdown("## 🤝 Connect with Professionals")
     st.markdown("##### Direct Access to Home Buyers, Sellers, and Verified Agents")
+    # user_type = st.radio("I am a:", ["Home Buyer", "Home Seller", "Property Agent"], horizontal=True, label_visibility="collapsed")
     st.write("---")
-
-    user_type = st.segmented_control("Select Your Role", ["Home Buyer", "Home Seller", "Property Agent"], default="Home Buyer")
+    user_type = st.selectbox("Select Your Role", ["Home Buyer", "Home Seller", "Property Agent"])
     st.markdown("<br>", unsafe_allow_html=True)
     st.markdown("<br>", unsafe_allow_html=True)
     
@@ -615,7 +633,6 @@ else:
 
         st.markdown("<br>", unsafe_allow_html=True)
 
-        
         # Search filters
         with st.expander("🔍 Advanced Search Filters", expanded=True):
             filter_col1, filter_col2, filter_col3 = st.columns([1.5, 1, 1], gap = "medium")
@@ -633,25 +650,19 @@ else:
         
         # YOUR EXACT TABS (add query_snowflake() as needed)
         # tab1, tab2, tab3, tab4 = st.tabs(["📋 Recommended Properties", "⭐ Saved Properties", "👥 Contact Agents", "📊 Market Insights"])
-        # with tab1:
-        #     st.subheader("Properties Matching Your Criteria")
-        #     # Your mock cards - replace w/ listings df above
-        #     st.info("Load from search results above.")
-        # with tab2: st.subheader("Your Saved Properties"); st.info("Query USER_FAVORITES table.")
-        # with tab3: st.subheader("Property Agents"); st.info("Query AGENTS table.")
-        # with tab4:
-        #     st.subheader("Market Insights")
-        #     insights = query_snowflake("SELECT TOWN, AVG(RESALE_PRICE) FROM GROUP4_ASG2.FINAL_DATA.PROPWISE_MASTER GROUP BY TOWN")
-        #     st.bar_chart(insights.set_index("TOWN"))
-        
-        st.markdown("---")
-        tab1, tab2, tab3 = st.tabs(["📋 Recommended", "⭐ Saved", "📊 Insights"])
-        with tab3:
-            insights = query_snowflake("SELECT TOWN, AVG(RESALE_PRICE) as PRICE FROM GROUP4_ASG2.FINAL_DATA.PROPWISE_MASTER GROUP BY TOWN LIMIT 10")
+        tab1, tab2, tab3, tab4 = st.tabs(["📋 Recommended", "⭐ Saved", "👥 Contacts", "📊 Insights"])
+        with tab1: st.subheader("Properties Matching Your Criteria"); st.info("Load from search results above.")
+            # Your mock cards - replace w/ listings df above
+        with tab2: st.subheader("Your Saved Properties"); st.info("Query USER_FAVORITES table.")
+        with tab3: st.subheader("Property Agents"); st.info("Query AGENTS table.")
+        with tab4:
+            st.subheader("Market Insights")
+            insights = query_snowflake("SELECT TOWN, AVG(RESALE_PRICE) FROM GROUP4_ASG2.FINAL_DATA.PROPWISE_MASTER GROUP BY TOWN")
             st.bar_chart(insights.set_index("TOWN"))
-        
-    
-    # HOME SELLER & AGENT - YOUR EXACT UI (add similar DB hooks)
+
+                
+            
+            # HOME SELLER & AGENT - YOUR EXACT UI (add similar DB hooks)
     elif user_type == "Home Seller":
         st.subheader("🏡 Seller Insights")
         st.info("Gain visibility into how many buyers are looking for properties in your town.")
@@ -659,7 +670,7 @@ else:
         # col1.metric("Property Views", "47", "+12")
         # # ... YOUR FULL SELLER UI HERE (unchanged, add query_snowflake calls)
         # st.info("✅ Seller dashboard ready - query recent sales for comps.")
-    
+            
     else:
         st.subheader("🏢 Property Agent Console")
         # ... YOUR FULL AGENT UI HERE (unchanged)
