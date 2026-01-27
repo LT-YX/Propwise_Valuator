@@ -1,0 +1,574 @@
+# Import python packages
+import streamlit as st
+from snowflake.snowpark.context import get_active_session
+import pandas as pd
+# import requests
+import numpy as np
+import pydeck as pdk
+import joblib
+import gzip
+import xgboost as xgb
+from snowflake.snowpark.files import SnowflakeFile
+
+# Streamlit Page Setup
+st.set_page_config(
+    page_title="PropWise Smart Valuator",
+    page_icon="🏠",
+    layout="wide",
+)
+
+# Custom styling for red and white theme 
+st.markdown("""
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+        
+        /* 1. GLOBAL BACKGROUNDS */
+        .stApp, [data-testid="stAppViewContainer"], [data-testid="stHeader"] {
+            background-color: #FDFBF0 !important; 
+            font-family: 'Inter', sans-serif;
+        }
+
+        /* 2. SIDEBAR CONTROL PANEL */
+        [data-testid="stSidebar"] {
+            background-color: #FDFBF0 !important; 
+            border-right: 1px solid #800000 !important;
+        }
+        
+        [data-testid="stSidebar"] p, [data-testid="stSidebar"] span, [data-testid="stSidebar"] label, [data-testid="stSidebar"] h1, [data-testid="stSidebar"] h2 {
+            color: #800000 !important;
+        }
+
+        div[data-testid="stRadio"] label[data-selected="true"] p {
+            color: #FFFFFF !important;
+            background-color: #800000;
+            border-radius: 6px;
+            padding: 4px 12px;
+            width: 100%;
+        }
+
+        [data-testid="stSidebar"] div.stAlert {
+            background-color: #800000 !important;
+            color: #FFFFFF !important;
+            border: 1px solid #5C0000 !important;
+            border-radius: 12px !important;
+        }
+        [data-testid="stSidebar"] div.stAlert p {
+            color: #FFFFFF !important;
+        }
+
+        /* 3. MAIN PAGE LABELS & HEADERS */
+        h1, h2, h3, h4, .stMarkdown {
+            color: #800000 !important;
+        }
+        
+        label[data-testid="stWidgetLabel"] p {
+            color: #800000 !important;
+            font-weight: 600 !important;
+        }
+
+        /* 4. DROPDOWNS & INPUT BOXES */
+        div[data-baseweb="select"] > div, 
+        div[data-baseweb="input"] > div,
+        div[data-testid="stNumberInput"] > div,
+        div[data-testid="stTextInput"] > div {
+            background-color: #800000 !important;
+            border: 1px solid #5C0000 !important;
+            border-radius: 8px !important;
+        }
+
+        input, div[data-baseweb="select"] * {
+            color: #FFFFFF !important;
+            -webkit-text-fill-color: #FFFFFF !important;
+        }
+
+        div[data-baseweb="popover"] ul {
+            background-color: #800000 !important;
+            border: 1px solid #5C0000 !important;
+        }
+        div[data-baseweb="popover"] li {
+            background-color: #800000 !important;
+            color: #FFFFFF !important;
+        }
+        div[data-baseweb="popover"] li:hover {
+            background-color: #5C0000 !important;
+        }
+
+        /* 5. BUTTONS & ICONS */
+        .stButton>button {
+            background-color: #800000 !important;
+            color: #FFFFFF !important;
+            border: 2px solid #FDFBF0 !important;
+            border-radius: 10px;
+            width: 100%;
+            font-weight: 600 !important;
+            padding: 0.6rem 0 !important;
+        }
+        .stButton>button:hover {
+            background-color: #5C0000 !important;
+            border-color: #FFFFFF !important;
+        }
+
+        div[data-testid="stNumberInput"] button {
+            background-color: #800000 !important;
+            border: none !important;
+        }
+        div[data-testid="stNumberInput"] button svg {
+            fill: #FFFFFF !important;
+        }
+
+        /* 6. EXPANDERS */
+        .streamlit-expanderHeader {
+            background-color: #800000 !important;
+            color: #FFFFFF !important;
+            border-radius: 8px !important;
+        }
+        .streamlit-expanderHeader svg {
+            fill: #FFFFFF !important;
+        }
+
+        /* 7. TOAST NOTIFICATIONS */
+        [data-testid="stToast"] {
+            background-color: #FDFBF0 !important;
+            border: 1px solid #800000 !important;
+            border-radius: 10px !important;
+        }
+        [data-testid="stToast"] p {
+            color: #800000 !important;
+            font-weight: 600 !important;
+        }
+        [data-testid="stToast"] svg {
+            fill: #800000 !important;
+        }
+
+        /* 8. GLOBAL INFO/SUCCESS/WARNING BOXES */
+        div.stAlert {
+            background-color: #800000 !important;
+            color: #FFFFFF !important;
+            border: 1px solid #5C0000 !important;
+            border-radius: 12px !important;
+        }
+        div.stAlert p, div.stAlert h1, div.stAlert h2, div.stAlert h3 {
+            color: #FFFFFF !important;
+        }
+        div.stAlert svg {
+            fill: #FFFFFF !important;
+        }
+        /* 9. SELECTBOX PERFECTION */
+        /* Targets the label text specifically for selectboxes */
+        div[data-testid="stSelectbox"] label p {
+            color: #800000 !important;
+            font-weight: 600 !important;
+        }
+
+        /* Targets the placeholder and selected text visibility */
+        div[data-testid="stSelectbox"] div[data-baseweb="select"] > div {
+            color: #FFFFFF !important;
+        }
+        /* 10. SLIDER PERFECTION (Maroon Track & Handle) */
+        div[data-testid="stSlider"] [data-baseweb="slider"] > div > div {
+            background-color: #800000 !important;
+        }
+        div[data-testid="stSlider"] [data-baseweb="slider"] [role="slider"] {
+            background-color: #800000 !important;
+            border: 2px solid #FFFFFF !important;
+        }
+        /* Style the range values and labels below the slider */
+        div[data-testid="stSlider"] [data-testid="stWidgetLabel"] p {
+            color: #800000 !important;
+        }
+        /* 11. ADVANCED SEARCH EXPANDER (Full Maroon/White) */
+        /* Outer border and main container */
+        [data-testid="stExpander"] {
+            border: 2px solid #800000 !important;
+            border-radius: 12px !important;
+            background-color: #FDFBF0 !important;
+            overflow: hidden !important;
+        }
+
+        /* Expander Header to Solid Maroon */
+        [data-testid="stExpander"] summary {
+            background-color: #800000 !important;
+            border-bottom: 2px solid #800000 !important;
+            padding: 5px 15px !important;
+        }
+
+        /* Forces Header Text and Icon to White */
+        [data-testid="stExpander"] summary p, 
+        [data-testid="stExpander"] summary svg {
+            color: #FFFFFF !important;
+            fill: #FFFFFF !important;
+        }
+        
+        /* Ensures the hover state doesn't turn it back to dark grey */
+        [data-testid="stExpander"] summary:hover {
+            background-color: #5C0000 !important;
+        }
+        /* 12. METRIC PERFECTION (Maroon Font) */
+        /* Targets the main large number ($450K, 12, etc.) */
+        [data-testid="stMetricValue"] {
+            color: #800000 !important;
+            font-weight: 700 !important;
+        }
+
+        /* Targets the label text above the number (Saved Properties, etc.) */
+        [data-testid="stMetricLabel"] p {
+            color: #800000 !important;
+            opacity: 0.8; /* Keeps labels slightly softer than the main numbers */
+            font-weight: 600 !important;
+        }
+        /* 13. SUCCESS BOX */
+        /* Targets the main container of st.success */
+        div[data-testid="stNotification"] {
+            background-color: #800000 !important;
+            color: #FFFFFF !important;
+            border: 1px solid #5C0000 !important;
+            border-radius: 12px !important;
+            box-shadow: 0 4px 12px rgba(128,0,0,0.1) !important;
+        }
+
+        /* Targets the text inside the success box to force it to White */
+        div[data-testid="stNotification"] .stMarkdown p {
+            color: #FFFFFF !important;
+            font-weight: 600 !important;
+            font-size: 1.05rem !important;
+        }
+
+        /* Targets the success icon (the checkmark) to turn it White */
+        div[data-testid="stNotification"] svg {
+            fill: #FFFFFF !important;
+        }
+
+        /* Ensures the close button (x) is also visible/white */
+        div[data-testid="stNotification"] button svg {
+            fill: #FFFFFF !important;
+            opacity: 0.8;
+        }
+        /* 15. CHECKBOX PERFECTION (Maroon Theme) */
+        /* Targets the text label of the checkbox */
+        div[data-testid="stCheckbox"] label p {
+            color: #800000 !important;
+            font-weight: 500 !important;
+        }
+
+        /* Targets the checkbox square when it is NOT checked */
+        div[data-testid="stCheckbox"] div[role="checkbox"] {
+            border-color: #800000 !important;
+        }
+
+        /* Targets the checkbox square when it IS checked */
+        div[data-testid="stCheckbox"] div[role="checkbox"][aria-checked="true"] {
+            background-color: #800000 !important;
+            border-color: #800000 !important;
+        }
+
+        /* Targets the checkmark icon inside the box */
+        div[data-testid="stCheckbox"] div[role="checkbox"] svg {
+            fill: #FFFFFF !important;
+        }
+
+        /* Removes the blue focus glow when clicking */
+        div[data-testid="stCheckbox"] div[role="checkbox"]:focus {
+            box-shadow: none !important;
+            outline: none !important;
+        }
+    </style>
+    """, unsafe_allow_html=True)
+
+
+# MODEL LOADING 
+BUNDLE_PATH = "@GROUP4_ASG2.FINAL_DATA.MODELS/resale_price_bundle.pkl.gz"
+
+@st.cache_resource
+def load_artifacts_from_stage(stage_path: str):
+    """Load complete ML bundle (model + encoders + feature order)."""
+    try:
+        raw_stream = SnowflakeFile.open(stage_path, "rb")
+        with gzip.open(raw_stream, "rb") as gz:
+            artifacts = joblib.load(gz)  # {"model", "label_encoders", "feature_columns"}
+        return artifacts
+    except Exception as e:
+        st.error(f"Bundle load failed: {e}")
+        return None
+
+artifacts = load_artifacts_from_stage(BUNDLE_PATH)
+if artifacts is None:
+    st.error("⚠️ ML bundle missing. Check @GROUP4_ASG2.FINAL_DATA.MODELS/resale_price_bundle.pkl.gz")
+    st.stop()
+
+model = artifacts["model"]
+label_encoders = artifacts["label_encoders"]
+feature_columns = artifacts["feature_columns"]
+
+
+# Set up and functions
+# Get the active Snowflake session provided by Snowflake / Streamlit integration 
+@st.cache_resource(show_spinner=False)
+def get_session():
+    return get_active_session()
+
+# load dropdown options for town, flat type, and storey range and cache them
+@st.cache_data(show_spinner=False)
+def get_dropdown_data():
+    session = get_session()
+    towns_df = session.sql("""
+        SELECT DISTINCT TOWN 
+        FROM GROUP4_ASG2.FINAL_DATA.PROPWISE_MASTER
+        WHERE TOWN IS NOT NULL
+        ORDER BY TOWN
+    """).to_pandas()
+    
+    flat_types_df = session.sql("""
+        SELECT DISTINCT FLAT_TYPE 
+        FROM GROUP4_ASG2.FINAL_DATA.PROPWISE_MASTER
+        WHERE FLAT_TYPE IS NOT NULL
+        ORDER BY FLAT_TYPE
+    """).to_pandas()
+    
+    storey_ranges_df = session.sql("""
+        SELECT DISTINCT STOREY_RANGE 
+        FROM GROUP4_ASG2.FINAL_DATA.PROPWISE_MASTER
+        WHERE STOREY_RANGE IS NOT NULL
+        ORDER BY STOREY_RANGE
+    """).to_pandas()
+    
+    return towns_df['TOWN'].tolist(), flat_types_df['FLAT_TYPE'].tolist(), storey_ranges_df['STOREY_RANGE'].tolist()
+
+session = get_session() 
+towns, flat_types, storey_ranges = get_dropdown_data() 
+
+# Help to run a SQL Query and return a pandas Dataframe
+@st.cache_data
+def query_snowflake(sql: str) -> pd.DataFrame:
+    return session.sql(sql).to_pandas()
+
+# Uses average lat/lon for the town matches in the input, to avoid API
+@st.cache_data(ttl=3600)
+def geocode_address(address: str) -> tuple[float | None, float | None]:
+    """Fixed: UPPERCASE TOWN matching."""
+    if not address:
+        return None, None
+    
+    # Clean & uppercase search
+    search_term = address.upper().strip()[:25]
+    
+    sql = f"""
+        SELECT 
+            AVG(LATITUDE) AS lat, 
+            AVG(LONGITUDE) AS lon,
+            COUNT(*) AS n_properties
+        FROM GROUP4_ASG2.FINAL_DATA.PROPWISE_MASTER 
+        WHERE UPPER(TOWN) LIKE '%{search_term}%'
+        GROUP BY TOWN
+        HAVING COUNT(*) >= 10  -- Reliable centroid
+        LIMIT 1
+    """
+    
+    try:
+        df = query_snowflake(sql)
+        if len(df) > 0 and pd.notna(df['lat'].iloc[0]):
+            return float(df['lat'].iloc[0]), float(df['lon'].iloc[0])
+        return None, None
+    except:
+        return None, None
+
+# Get recent nearby transactions within a radius around the given point. Used for showing comps and area stats.
+@st.cache_data
+def get_nearby_sales(lat: float, lon: float, radius_km: float = 1.0) -> pd.DataFrame:
+    """Nearby comps for metrics."""
+    if lat is None or lon is None: return pd.DataFrame()
+    
+    sql = f"""
+    WITH target_pt AS (SELECT ST_POINT({lon}, {lat})::GEOGRAPHY AS pt)
+    SELECT TOWN, FLAT_TYPE, STOREY_RANGE, RESALE_PRICE, LATITUDE, LONGITUDE,
+           ROUND(ST_DISTANCE(ST_POINT(LONGITUDE, LATITUDE)::GEOGRAPHY, pt)/1000, 2) as DIST_KM
+    FROM GROUP4_ASG2.FINAL_DATA.PROPWISE_MASTER, target_pt
+    WHERE ST_DISTANCE(ST_POINT(LONGITUDE, LATITUDE)::GEOGRAPHY, pt) <= {radius_km * 1000}
+      AND SALE_YEAR >= 2023
+    ORDER BY ST_DISTANCE(ST_POINT(LONGITUDE, LATITUDE)::GEOGRAPHY, pt)
+    LIMIT 20
+    """
+    return query_snowflake(sql)
+
+
+# MAIN APP 
+
+# Get Snowflake session
+session = get_session()
+
+
+# Get dropdown lists
+towns, flat_types, storey_ranges = get_dropdown_data()  # serializable lists for UI
+
+
+# Sidebar
+with st.sidebar:
+    st.image("https://img.icons8.com/fluency/96/home.png", width=60)
+    st.markdown("<h2 style='margin-bottom:0;'>PropWise Smart Valuator</h2>", unsafe_allow_html=True)
+    st.markdown("<p style='opacity:0.7; font-size:0.9rem;'>Snowflake ML-Powered HDB Valuation</p>", unsafe_allow_html=True)
+    st.write("---")
+    page = st.radio("Navigation", ["🧠 Price Prediction", "🗺️ Amenities Explorer", "🤝 Connect Hub"])
+    st.markdown("---")
+    st.info(" ML Model Loaded | No APIs")
+
+
+# PAGE 1: PRICE PREDICTION
+if page == "🧠 Price Prediction":
+    st.markdown("## 🏠 Production ML Predictor")
+    st.caption("#### Your home's true value, Powered by Data")
+
+        # SPACE 1: Power BI Dashboard
+    st.markdown("### 📊 Market Overview")
+    # Power BI Embed (see method below)
+    st.empty()  # Placeholder - replace with dashboard
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        st.markdown("#### 📋 Amenities Nearby")
+        fitness_recreation = st.checkbox("🏋️ Fitness & Recreation", value=False)
+        food_daily_groceries = st.checkbox("🛒 Food & Daily Groceries", value=False)
+        healthcare_access = st.checkbox("🏥 Healthcare Access", value=False)
+        childcare_family = st.checkbox("👨‍👩‍👧 Childcare & Family", value=False)
+        
+        st.markdown("#### 🚶 MRT Distance")
+        mrt_distance = st.slider("Nearest MRT Distance (Metres)", 30, 1000, 500, 50)
+    
+    with col2:
+        st.markdown("#### 🏢 Flat Information")
+        age_category = st.selectbox(
+            "🏗️ House Age",
+            options=sorted(label_encoders["age_category"].classes_)
+        )
+        town = st.selectbox(
+            "🏘️ Town",
+            options=sorted(label_encoders["TOWN"].classes_)
+        )
+        flat_type = st.selectbox(
+            "🏠 Flat Type",
+            options=sorted(label_encoders["FLAT_TYPE"].classes_)
+        )
+        storey_range = st.selectbox(
+            "📊 Storey Range",
+            options=sorted(label_encoders["STOREY_RANGE"].classes_)
+        )
+    
+    if st.button("🔮 Predict Resale Price", type="primary", use_container_width=True):
+        input_data = {
+            "fitness_recreation": int(fitness_recreation),
+            "food_daily_groceries": int(food_daily_groceries),
+            "healthcare_access": int(healthcare_access),
+            "childcare_family": int(childcare_family),
+            "NEAREST_MRT_DISTANCE_M": float(mrt_distance),
+            "age_category": label_encoders["age_category"].transform([age_category])[0],
+            "TOWN": label_encoders["TOWN"].transform([town])[0],
+            "FLAT_TYPE": label_encoders["FLAT_TYPE"].transform([flat_type])[0],
+            "STOREY_RANGE": label_encoders["STOREY_RANGE"].transform([storey_range])[0],
+        }
+        
+        # Reorder to exact training feature order
+        X_input = pd.DataFrame([input_data])[feature_columns]
+        
+        prediction = model.predict(X_input)[0]
+        
+        # Hero result
+        st.markdown(f"""
+            <style>
+            .prediction-card {{
+                background: linear-gradient(135deg, #800000 0%, #A52A2A 100%) !important;
+                padding: 3rem 2rem !important;
+                border-radius: 20px !important;
+                text-align: center !important;
+                box-shadow: 0 15px 40px rgba(128,0,0,0.4) !important;
+                margin: 2rem 0 !important;
+                isolation: isolate !important;
+                position: relative !important;
+            }}
+            
+            .prediction-price {{
+                font-size: 4.5rem !important;
+                font-weight: 900 !important;
+                color: #FFFFFF !important;
+                -webkit-text-fill-color: #FFFFFF !important !important;
+                -webkit-text-stroke: 0.1px transparent !important;
+                text-shadow: 0 3px 8px rgba(0,0,0,0.5) !important;
+                display: block !important;
+                line-height: 1.1 !important;
+                letter-spacing: -1px !important;
+                margin-bottom: 1rem !important;
+            }}
+            
+            .prediction-label {{
+                font-size: 1.4rem !important;
+                color: #FFFFFF !important;
+                -webkit-text-fill-color: #FFFFFF !important;
+                margin: 0 0 0.5rem 0 !important;
+                font-weight: 500 !important;
+                opacity: 0.95 !important;
+            }}
+            
+            .prediction-details {{
+                font-size: 1.1rem !important;
+                color: #F0F0F0 !important;
+                margin: 0 !important;
+                font-weight: 400 !important;
+                opacity: 0.9 !important;
+            }}
+            </style>
+            
+            <div class="prediction-card">
+                <span class="prediction-price">${int(prediction):,.0f}</span>
+                <p class="prediction-label">Production ML Prediction</p>
+                <p class="prediction-details">
+                    {town} | {flat_type} | {storey_range} | {age_category}
+                </p>
+            </div>
+            """, unsafe_allow_html=True)
+
+elif page == "🏠 Buyer/Seller/Agent":
+    st.markdown("## 👥 Role-Based Dashboard")
+    
+    role = st.selectbox("Select Role", ["Home Buyer", "Home Seller", "Property Agent"])
+    
+    if role == "Home Buyer":
+        st.markdown("### 🏠 Home Buyer")
+        
+        # Town + Block selector
+        col1, col2 = st.columns(2)
+        with col1:
+            town = st.selectbox("🏘️ Town", towns)
+        with col2:
+            block_no = st.selectbox("🏢 Block Number", ["123", "456"])  # Dynamic later
+        
+        # MapBox for amenities
+        lat, lon = geocode_address(f"{town} {block_no}")
+        if lat and lon:
+            # PyDeck amenities map
+            amenities_layer = pdk.Layer(...)  # MRT, hawkers, etc.
+            st.pydeck_chart(...)
+            
+            # Street options for town/block
+            streets = session.sql(f"""
+                SELECT DISTINCT BLOCK 
+                FROM GROUP4_ASG2.FINAL_DATA.PROPWISE_MASTER 
+                WHERE TOWN = '{town}' AND BLOCK LIKE '%{block_no}%'
+            """).to_pandas()
+            selected_street = st.selectbox("🛣️ Street", streets['BLOCK'].tolist())
+        
+        # Power BI dashboard space
+        st.markdown("### 📊 Buyer Dashboard")
+        embed_powerbi("your_buyer_url")
+        
+    elif role == "Home Seller":
+        st.markdown("### 📈 Seller Dashboard")
+        embed_powerbi("your_seller_url", 700)
+        
+    else:  # Property Agent
+        st.markdown("### 🏢 Agent Dashboard")
+        embed_powerbi("your_agent_url", 700)
+
+# footer
+st.markdown("---")
+col1, col2, col3 = st.columns([1, 3, 1])
+with col2:
+    st.markdown("<p style='text-align: center; color: #800000; font-weight: 600;'>"
+                "© 2026 PropWise Smart Valuator | Powered by Snowflake ML</p>", 
+                unsafe_allow_html=True)
