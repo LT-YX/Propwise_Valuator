@@ -10,7 +10,7 @@ import gzip
 import xgboost as xgb
 from snowflake.snowpark.files import SnowflakeFile
 import os
-MAPBOX_API_KEY = "pk.eyJ1IjoibHZ0eXgiLCJhIjoiY21rcGpnNDFiMGRydDNlc2FhdXh2aW83NCJ9._zkoXyM6FbILkvw6RfM3UQ"
+MAPBOX_API_KEY = "your-api-key"
 os.environ['MAPBOX_API_KEY'] = MAPBOX_API_KEY
 
 # Streamlit Page Setup
