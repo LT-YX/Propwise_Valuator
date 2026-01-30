@@ -718,8 +718,6 @@ with st.sidebar:
     st.write("---")
     page = st.radio("Navigation", ["🧠 Price Prediction", "🔎 User Specific Data"])
     st.markdown("---")
-    st.info(" ML Model Loaded | No APIs")
-
 
 
 # PAGE 1: PRICE PREDICTION
@@ -727,23 +725,23 @@ if page == "🧠 Price Prediction":
     st.markdown("## 🏠 Production ML Predictor")
     st.caption("#### Your home's true value, Powered by Data")
     
-    # POWER BI DASHBOARD - Amenities Influence
+    # POWER BI DASHBOARD - Market Overview
     st.markdown("### 📊 Market Overview")
-    st.caption("Understanding how amenities influence HDB resale prices")
+    st.caption("Understand the Resale Price Trends")
     
-    import streamlit.components.v1 as components
-    components.html("""
-        <iframe src="https://app.powerbi.com/reportEmbed?reportId=99b6378e-c2f2-437a-a6f3-0fff2af99500&autoAuth=true&ctid=cba9e115-3016-4462-a1ab-a565cba0cdf1" 
-        width="100%" 
-        height="600" 
-        frameborder="0" 
-        allowfullscreen 
-        title="Amenities Influence on HDB Prices"></iframe>
-    """, height=620)
+    # Show dashboard preview image
+    st.image("ADO_Dashboard.png", use_container_width=True)
     
-    # Confirmation message
-    st.info("📊 Power BI dashboard loaded above")
-
+    # Direct link to Power BI
+    power_bi_url = "https://app.powerbi.com/reportEmbed?reportId=33961be5-0037-4dcc-b0ed-4fa1f648aa6b&autoAuth=true&ctid=cba9e115-3016-4462-a1ab-a565cba0cdf1"
+    col1, col2, col3 = st.columns([1, 2, 1])
+    with col2:
+        st.link_button(
+            "📊 Open Interactive Dashboard",
+            power_bi_url,
+            type="primary",
+            use_container_width=True
+        )        
     
     st.markdown("---")
     col1, col2 = st.columns(2)
@@ -849,6 +847,8 @@ if page == "🧠 Price Prediction":
             </div>
             """, unsafe_allow_html=True)
 
+
+
 #PAGE 2: ROLE SELECTION & DASHBOARDS
 elif page == "🔎 User Specific Data":
     st.markdown("## 👥 Role-Based Property Intelligence")
@@ -862,14 +862,31 @@ elif page == "🔎 User Specific Data":
     )
     
     st.markdown("---")
-    
+
     # Home buyer page 
     if role == "🏠 Home Buyer":
-        st.markdown("### 🏠 Home Buyer - Amenities Explorer")
-        st.info("🎯 **Find Your Dream Home**: Select a town and address to visualize nearby amenities on an interactive map")
+        # HOME BUYER POWER BI DASHBOARD
+        st.markdown("### 📊 Home Buyer Market Insights")
+        st.info("Navigating Resale Values and Amenities")
+        
+        st.image("ADO_DASHBOARD_RISHITHA.png", use_container_width=True)
+        
+        buyer_powerbi_url = "https://app.powerbi.com/links/BVtmvF2Ats?ctid=cba9e115-3016-4462-a1ab-a565cba0cdf1&pbi_source=linkShare"
+        
+        col1, col2, col3 = st.columns([1, 2, 1])
+        with col2:
+            st.link_button(
+                "📊 Open Home Buyer Analytics Dashboard",
+                buyer_powerbi_url,
+                type="primary",
+                use_container_width=True
+            )
         
         st.markdown("---")
-         
+
+        st.markdown("### 🏠 Home Buyer - Amenities Explorer")
+        st.info("🎯 **Find Your Dream Home**: Select a town and address to visualize nearby amenities on an interactive map")
+    
         st.markdown("### 📍 Select Property Location")
         
         col1, col2 = st.columns(2)
@@ -1256,60 +1273,47 @@ elif page == "🔎 User Specific Data":
     # HOME SELLER PAGE (Power BI Dashboard)
    
     elif role == "💰 Home Seller":
-        st.markdown("### 💰 Home Seller Dashboard")
-        st.info("📊 **Pricing Analytics**: View market trends and pricing insights for sellers")
+        st.markdown("### 📊 Home Valuation Dashboard")
+        st.info(" 📈 Resale data for strategic home pricing")
         
-        # Power BI Placeholder
-        st.markdown("""
-        <div style="background: #FDFBF0; 
-                    border: 2px dashed #800000; 
-                    border-radius: 10px; 
-                    padding: 100px; 
-                    text-align: center;
-                    min-height: 600px;">
-            <h2 style="color: #800000;">💰 Seller Dashboard</h2>
-            <p style="color: #666; font-size: 1.2rem;">Power BI dashboard will be displayed here</p>
-            <p style="color: #999;">Add your Power BI embed code to replace this placeholder</p>
-        </div>
-        """, unsafe_allow_html=True)
+        st.image("ADO_DASHBOARD_HONGYI.png", use_container_width=True)
         
-        # TODO: Replace with actual Power BI embed
-        # import streamlit.components.v1 as components
-        # components.iframe(
-        #     src="https://app.powerbi.com/view?r=YOUR_SELLER_REPORT_ID",
-        #     width=1400,
-        #     height=800,
-        #     scrolling=True
-        # )
-    
+        seller_powerbi_url = "https://app.powerbi.com/links/83p8TyzrXb?ctid=cba9e115-3016-4462-a1ab-a565cba0cdf1&pbi_source=linkShare&bookmarkGuid=04c0cd41-3a78-4b3d-a373-0844baf31b83"
+        
+        col1, col2, col3 = st.columns([1, 2, 1])
+        with col2:
+            st.link_button(
+                "📊 Open Home Seller Dashboard",
+                seller_powerbi_url,
+                type="primary",
+                use_container_width=True
+            )
+            
     # ========================================
     # PROPERTY AGENT PAGE (Power BI Dashboard)
     # ========================================
     else:  # Property Agent
         st.markdown("### 🏢 Property Agent Dashboard")
-        st.info("📈 **Market Intelligence**: Comprehensive market analytics for property agents")
-        
-        # Power BI Placeholder
-        st.markdown("""
-        <div style="background: #FDFBF0; 
-                    border: 2px dashed #800000; 
-                    border-radius: 10px; 
-                    padding: 100px; 
-                    text-align: center;
-                    min-height: 600px;">
-            <h2 style="color: #800000;">🏢 Agent Dashboard</h2>
-            <p style="color: #666; font-size: 1.2rem;">Power BI dashboard will be displayed here</p>
-            <p style="color: #999;">Add your Power BI embed code to replace this placeholder</p>
-        </div>
-        """, unsafe_allow_html=True)
-        
-        # TODO: Replace with actual Power BI embed
-        # import streamlit.components.v1 as components
-        # components.iframe(
-        #     src="https://app.powerbi.com/view?r=YOUR_AGENT_REPORT_ID",
-        #     width=1400,
-        #     height=800,
-        #     scrolling=True
-        # )
-
+        st.info("📈 Comprehensive market analytics for property agents")
     
+        st.image("ADO_DASHBOARD_LOVETTE.png", use_container_width=True)
+        
+        agent_powerbi_url = "https://app.powerbi.com/links/9wflj0kwqe?ctid=cba9e115-3016-4462-a1ab-a565cba0cdf1&pbi_source=linkShare&bookmarkGuid=14ce6fde-62d4-47df-a436-62540f05dc1b"
+        
+        col1, col2, col3 = st.columns([1, 2, 1])
+        with col2:
+            st.link_button(
+                "📊 Open Property Agent Dashboard",
+                agent_powerbi_url,
+                type="primary",
+                use_container_width=True
+            )
+# footer
+st.markdown("---")
+col1, col2, col3 = st.columns([1, 3, 1])
+with col2:
+    st.markdown("<p style='text-align: center; color: #800000; font-weight: 600;'>"
+                "© 2026 PropWise Smart Valuator | Powered by Snowflake ML</p>", 
+                unsafe_allow_html=True)
+    
+            
