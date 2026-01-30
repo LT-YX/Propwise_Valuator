@@ -1,0 +1,14 @@
+name: app_environment
+channels:
+  - snowflake
+dependencies:
+  - folium=0.20.0
+  - joblib=1.5.3
+  - pydeck=0.9.1
+  - python=3.11.*
+  - scikit-learn=1.7.1
+  - snowflake=1.10.0
+  - snowflake-snowpark-python=
+  - streamlit=
+  - streamlit-folium=0.15.0
+  - xgboost=2.1.4
