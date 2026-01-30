@@ -733,7 +733,7 @@ if page == "🧠 Price Prediction":
     st.image("ADO_Dashboard.png", use_container_width=True)
     
     # Direct link to Power BI
-    power_bi_url = "https://app.powerbi.com/reportEmbed?reportId=33961be5-0037-4dcc-b0ed-4fa1f648aa6b&autoAuth=true&ctid=cba9e115-3016-4462-a1ab-a565cba0cdf1"
+    power_bi_url = "https://app.powerbi.com/links/4OVr7OpOaD?ctid=cba9e115-3016-4462-a1ab-a565cba0cdf1&pbi_source=linkShare"
     col1, col2, col3 = st.columns([1, 2, 1])
     with col2:
         st.link_button(
