@@ -25,19 +25,19 @@ Resale Flat Prices Based On Registration Date From Jan 2015 to Dec 2016 & Resale
 - Transacted prices of HDB resale flats based on registration date 
 - Initial Features: Month, Town, Flat Type, Block, Street Name, Storey Range, Floor Area (sqm), Flat Model, Lease Commence Date, Remaining Lease, Resale Price
 
-HDB Price Range Dataset [https://data.gov.sg/datasets?query=HDB+price&resultId=177](url)
+HDB Price Range Dataset [https://data.gov.sg/datasets/d_2d493bdcc1d9a44828b6e71cb095b88d/view]
 - Price Range of BTO across the different financial year and town
 - Initial Features: Financial year, Town, Room Type, Min Selling Price, Max Selling Price
 
-HDB Median Resale Price [[https://data.gov.sg/datasets?agencies=Housing+%26+Development+Board+(HDB)&query=hdb+price&resultId=d_b51323a474ba789fb4cc3db58a3116d4]](url)
+HDB Median Resale Price [https://data.gov.sg/datasets/d_b51323a474ba789fb4cc3db58a3116d4/view]
 - Median Price of HDB Resales by Housing Type and Year
 - Initial Features
 
-HDB Resale Index [https://data.gov.sg/datasets?agencies=Housing+%26+Development+Board+(HDB)&query=hdb+index&resultId=d_14f63e595975691e7c24a27ae4c07c79](url)
+HDB Resale Index [https://data.gov.sg/datasets/d_14f63e595975691e7c24a27ae4c07c79/view]
 - Resale Index for HDB by Quarter
 - Resale Index: Tracks general trends of HDB Resale Prices, Uses regression
 
-HDB Property Information [https://data.gov.sg/datasets?agencies=Housing+%26+Development+Board+(HDB)&query=hdb+property+Information&resultId=d_17f5382f26140b1fdae0ba2ef6239d2f](url)
+HDB Property Information [https://data.gov.sg/datasets/d_17f5382f26140b1fdae0ba2ef6239d2f/view]
 - Other relevant information of HDB, May affect valuation
 
 CHAS Clinics Dataset [https://data.gov.sg/datasets/d_548c33ea2d99e29ec63a7cc9edcccedc/view](url)
