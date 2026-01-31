@@ -1,5 +1,5 @@
 # Propwise_Valuator
-(Insert Description Here)
+Our solution “Propwise Valuator” serves as a comprehensive digital platform designed to address data fragmentation within the public housing market. By centralising HDB pricing and urban amenity datasets into a secure cloud environment (snowflake), the project provides a single source of truth for all property related inquiries. Our interactive Streamlit website integrates a machine learning price prediction model and other specialised analytical features for each target group. Each member of the team created a unique dashboard, each specifically designed to meet the distinct informational needs of home buyers, sellers, and property agents.
 
 ### Important Links
 Link to Trello Board: [https://trello.com/invite/b/69245bc27e74602b13091001/ATTI85ca6c923be2873e32cab67a48253d3b574FF329/propwise](url)
@@ -8,7 +8,7 @@ Link to Recordings:
 ## Table of Contents
 
 ## Project Overview
-Propwise aims to (Insert objectives)
+The primary goal of this project is to centralise disparate public housing datasets from government portals (data.gov.sg) into a unified cloud environment. By consolidating official pricing information from the Housing Development Board (HDB) with relevant amenity metrics such as proximity to MRT stations and healthcare facilities, the project aims to enhance data security and operational functionality.
 
 ### Architecture
 
