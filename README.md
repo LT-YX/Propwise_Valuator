@@ -129,5 +129,10 @@ Bus Stops Dataset [https://datamall2.mytransport.sg/ltaodataservice/BusStops]
 ## Machine Learning Model
 The final selected model was a XGBoost Regressor. [Insert description]
 
-## Streamlit App 
-The streamlit app built on snowflake contains the following features:
+## Streamlit App : PropWise Smart Valuator 
+PropWise Smart Valuator is a streamlit based web application. Its designed to analyse and predict HDB resale prices using data driven insights and machine learning. The application combines market trends, amenity influence analysis and role based dashboards to support better property related decision making for home buyers, home sellers and property agents.
+
+The streamlit app built on snowflake contains the following features :
+- Price Prediction : Predicts HDB resale prices using a machine learning model based on the flat attributes, location, amenities and MRT proximity.
+- User Specific Data : Delivers role based property insights tailored for home buyers, home sellers and property agents to support different decision making needs.
+- Amenities Explorer : Visualises nearby amenities and accessibility of a chosen property through interactive map and amenity scores. 
