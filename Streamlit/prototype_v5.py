@@ -10,7 +10,7 @@ import gzip
 import xgboost as xgb
 from snowflake.snowpark.files import SnowflakeFile
 import os
-MAPBOX_API_KEY = "your-api-key"
+MAPBOX_API_KEY = "pk.eyJ1IjoibHZ0eXgiLCJhIjoiY21rcGpnNDFiMGRydDNlc2FhdXh2aW83NCJ9._zkoXyM6FbILkvw6RfM3UQ"
 os.environ['MAPBOX_API_KEY'] = MAPBOX_API_KEY
 
 # Streamlit Page Setup
@@ -724,21 +724,38 @@ with st.sidebar:
 if page == "🧠 Price Prediction":
     st.markdown("## 🏠 Production ML Predictor")
     st.caption("#### Your home's true value, Powered by Data")
-    
-    # POWER BI DASHBOARD - Market Overview
+        
+    # POWER BI DASHBOARDS - Market Overview
     st.markdown("### 📊 Market Overview")
     st.caption("Understand the Resale Price Trends")
     
-    # Show dashboard preview image
-    st.image("ADO_Dashboard.png", use_container_width=True)
+    # Create two columns for side-by-side dashboards
+    col1, col2 = st.columns(2)
     
-    # Direct link to Power BI
-    power_bi_url = "https://app.powerbi.com/links/4OVr7OpOaD?ctid=cba9e115-3016-4462-a1ab-a565cba0cdf1&pbi_source=linkShare"
-    col1, col2, col3 = st.columns([1, 2, 1])
-    with col2:
+    # Dashboard 1 - Original Market Overview
+    with col1:
+        st.markdown("#### 📈 Market Trends")
+        st.image("ADO_Dashboard.png", use_container_width=True)
+        
+        power_bi_url_1 = "https://app.powerbi.com/reportEmbed?reportId=33961be5-0037-4dcc-b0ed-4fa1f648aa6b&autoAuth=true&ctid=cba9e115-3016-4462-a1ab-a565cba0cdf1"
+        
         st.link_button(
-            "📊 Open Interactive Dashboard",
-            power_bi_url,
+            "📊 View Market Trends",
+            power_bi_url_1,
+            type="primary",
+            use_container_width=True
+        )
+    
+    # Dashboard 2:
+    with col2:
+        st.markdown("#### 💰 Amenities Influence")
+        st.image("ADO_DASHBOARD_ZESSLYN.png", use_container_width=True)
+        
+        power_bi_url_2 = "https://app.powerbi.com/links/fg-txSS-d0?ctid=cba9e115-3016-4462-a1ab-a565cba0cdf1&pbi_source=linkShare"
+        
+        st.link_button(
+            "📊 View Amenities Analysis",
+            power_bi_url_2,
             type="primary",
             use_container_width=True
         )        
@@ -952,13 +969,13 @@ elif page == "🔎 User Specific Data":
                     # ========================================
                     # DISPLAY: PROPERTY OVERVIEW
                     # ========================================
-                    st.markdown("### 🏡 Property Information")
+                    st.markdown("### 🚆 Nearest MRT and Amenities Score")
                     
                     # Row 1: Address & Amenity Score
                     info_col1, info_col2 = st.columns(2)
                     
                     with info_col1:
-                        st.metric("🚉 Nearest MRT", prop['NEAREST_MRT_DISTANCE_M'])
+                        st.metric("🚉 Nearest MRT", f"{int(round(prop['NEAREST_MRT_DISTANCE_M']))}m" if pd.notna(prop['NEAREST_MRT_DISTANCE_M']) else "-")
                     
                     with info_col2:
                         st.metric("⭐ Amenity Score", f"{prop['OVERALL_AMENITY_SCORE']:.1f}/10" if pd.notna(prop['OVERALL_AMENITY_SCORE']) else "N/A")
