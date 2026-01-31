@@ -40,6 +40,10 @@ HDB Resale Index [https://data.gov.sg/datasets/d_14f63e595975691e7c24a27ae4c07c7
 HDB Property Information [https://data.gov.sg/datasets/d_17f5382f26140b1fdae0ba2ef6239d2f/view]
 - Other relevant information of HDB, May affect valuation
 
+HDB Existing Building Dataset [https://data.gov.sg/datasets/d_16b157c52ed637edd6ba1232e026258d/view]
+- Geospatial polygon data of all active HDB building footprints across Singapore
+- Initial Features: BLK_NO, ST_COD, ENTITYID, POSTAL_COD, INC_CRC, FMEL_UPD_D, SHAPE.AREA, SHAPE.LEN, OBJECTID, Geometry Coordinates
+
 CHAS Clinics Dataset [https://data.gov.sg/datasets/d_548c33ea2d99e29ec63a7cc9edcccedc/view]
 - CHAS Clinics Locations across Singapore
 - Initial Features: Name, Description
