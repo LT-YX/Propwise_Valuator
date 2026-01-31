@@ -3,6 +3,7 @@ Our solution “Propwise Valuator” serves as a comprehensive digital platform 
 
 ### Important Links
 Link to Trello Board: [https://trello.com/invite/b/69245bc27e74602b13091001/ATTI85ca6c923be2873e32cab67a48253d3b574FF329/propwise]
+
 Link to Recordings: [https://drive.google.com/drive/folders/1mQTFO2ind_-94yZyWlSR6lO7VkW88BXF]
 
 ## Project Overview
