@@ -2,22 +2,43 @@
 Our solution “Propwise Valuator” serves as a comprehensive digital platform designed to address data fragmentation within the public housing market. By centralising HDB pricing and urban amenity datasets into a secure cloud environment (snowflake), the project provides a single source of truth for all property related inquiries. Our interactive Streamlit website integrates a machine learning price prediction model and other specialised analytical features for each target group. Each member of the team created a unique dashboard, each specifically designed to meet the distinct informational needs of home buyers, sellers, and property agents.
 
 ### Important Links
-Link to Trello Board: [https://trello.com/invite/b/69245bc27e74602b13091001/ATTI85ca6c923be2873e32cab67a48253d3b574FF329/propwise](url)
-Link to Recordings: 
-
-## Table of Contents
+Link to Trello Board: [https://trello.com/invite/b/69245bc27e74602b13091001/ATTI85ca6c923be2873e32cab67a48253d3b574FF329/propwise]
+Link to Recordings: [https://drive.google.com/drive/folders/1mQTFO2ind_-94yZyWlSR6lO7VkW88BXF]
 
 ## Project Overview
 The primary goal of this project is to centralise disparate public housing datasets from government portals (data.gov.sg) into a unified cloud environment. By consolidating official pricing information from the Housing Development Board (HDB) with relevant amenity metrics such as proximity to MRT stations and healthcare facilities, the project aims to enhance data security and operational functionality.
 
 ### Architecture
+The Propwise Valuator architecture utilises a snowflake setup designed for scalability and high-performance analytics. Data is ingested into a Snowflake warehouse, where it is organised into Raw, Cleaned, and Final schemas to maintain a clear data lineage. The application logic including the XGBoost predictive engine is integrated directly with the cloud database. The frontend is powered by Streamlit, providing a responsive and interactive user interface that queries the final Propwise_master data in real-time, ensuring that all valuation insights and geospatial visualisations are derived from a single, centralized source of truth.
 
 ### Features
-
-## Project Setup 
-(Include dependencies and scripts / How to run project)
+- Interactive Market Filters: Dynamic sorting by town, flat type, and sale year.
+- Price Prediction Valuation Model: Real-time price estimation powered by XGBoost.
+- MRT Proximity Analytics: Visual correlation between transport access and property premiums.
+- Lease Decay Tracking: Linear trend analysis comparing housing price to remaining lease.
+- Geospatial Heatmaps: Color-coded Mapbox integration for budget-based property discovery.
+- Amenity Scoring: Quantitative assessment of local services and convenience factors.
+- Centralised Cloud Data: Unified Snowflake architecture for real-time data synchronization.
+- Multi-Stakeholder Dashboards: Tailored interfaces for buyers, sellers, and property agents.
+  
+## Repository Contents
+Streamlit Webapp (GROUP4_ASG2_PROPWISE) can be found under streamlit section in snowflake 
+- Snowflake Database & SQL Logic
+ - Database Architecture: Implementation of schema (Raw, Cleaned, Final).
+ - Data Ingestion: SQL commands for loading data into Snowflake internal stages and tables.
+ - Cleaning: Scripts for null handling, data type standardisation, and removal of duplicate records.
+ - Feature Engineering: SQL-based creation of distance-to-MRT metrics and lease-remaining calculations etc.
+ - Table Joins: Complex relational joins to consolidate housing transactions with amenity data into a master dataset.
+- CI/CD Pipeline
+- Streamlit Web Application
+ - Real-time Prediction: User interface for inputting property details to trigger the XGBoost valuation engine.
+ - Dynamic Visualizations: Interactive Plotly charts and Mapbox geospatial heatmaps.
+ - Secure Data Connection: Integration through streamlit-in-snowflake
+ - Dashboards: Custom views optimised for Home Buyers, Sellers, and Property Agents.
 
 ## Data Pipeline Workflow
+The Propwise Valuator utilises a ELT (Extract, Load, Transform) pipeline designed for high-performance data processing within the Snowflake ecosystem. The workflow starts with the extraction of raw housing and amenity data from various government portals, which is then securely ingested into a dedicated raw schema. Leveraging the distributed compute power of Snowflake, SnowSQL scripts clean, standardisation, and complex feature engineering such as calculating proximity to transport hubs directly within the cloud. The finalised dataset is then integrated into Streamlit-in-Snowflake app, ensuring that the predictive XGBoost models and interactive dashboards are always powered by the most current and validated data.
+
 ### Datasets
 #### Raw Data
 HDB Resale Flat Prices [https://data.gov.sg/collections/189/view] 
@@ -113,20 +134,22 @@ Clincs Dataset [https://www.kaggle.com/datasets/sunnysharma432/singapore-clinic-
 Bus Stops Dataset [https://datamall2.mytransport.sg/ltaodataservice/BusStops]
 -  Information for all bus stops currently being serviced by buses
 -  Initial File Type: json
--  Initial Features: BUSSTOPCOD, DESCRIPTION, LATITUDE, LONGITUDE, ROADNAME
+-  Initial Features: BUSSTOPCODE, DESCRIPTION, LATITUDE, LONGITUDE, ROADNAME
 
 ### Data Migration
+The migration process followed an ELT (Extract, Load, Transform) framework to maintain high data security and leverage cloud-native performance. Raw datasets were initially extracted from the data.gov.sg portal and sources before being documented in GitHub repository. Data was then ingested directly from local stages into the Raw Schema within Snowflake. This approach ensured that all transformations occurred within the secure Snowflake environment, minimising the risk associated with handling large-scale datasets in local memory
 
 ### Data Cleaning 
+Once staged in the raw schema, the data underwent cleaning to ensure consistency across all features. Key processes included the removal of records with null primary identifiers and the standardisation of categorical values, such as town names and flat models. Furthermore, complex geospatial files were converted into tabular formats suitable for Snowflake analysis, and unnecessary columns were dropped to optimise query performance. This stage transformed disorganised raw inputs into a structured, high-quality dataset within the Cleaned Schema.
 
 ### Feature Engineering 
+To enhance the predictive accuracy of the Propwise Valuator model, several critical features were engineered within the Final Schema. The team utilized SnowSQL to calculate spatial metrics, such as the exact distance from each housing block to the nearest MRT station and primary school. Additionally, temporal features like the "remaining lease" were derived from lease commencement dates to account for the impact of lease decay on property value. These engineered features provide the depth required for the XGBoost model to generate high-fidelity price predictions.
 
 ### Joining of Data
+The final stage of the pipeline involved the complex integration of disparate datasets to create a unified analytical view. Using SnowSQL, the HDB data were joined with the engineered amenity and geospatial datasets. The team implemented  join logic using validated primary keys such as postal codes to ensure that every property record was correctly enriched with its corresponding location-based insights. This process eliminated data silos and created a comprehensive relational structure.
 
-### Final Data
-#### HDB Amenity Master Data
-#### HDB Price Master
-#### Propwise Master Data
+### Final Data - Propwise Master Data
+The result of the pipeline is the Propwise Master Data table, located in the final schema. This consolidated table serves as the "single source of truth" for the entire project, containing the full history of HDB price transactions integrated with multi-dimensional features like transport proximity, amenity scores, and lease longevity. This curated dataset is the primary engine behind the interactive Streamlit, dashboards and the trained XGBoost model, ensuring that all end-users whether buyers, sellers, or property agents receive insights based on the most accurate and enriched data available.
 
 ### Continuous Integration & Continuous Deployment
 Our CI/CD pipeline leverages GitHub Actions and Snowflake's native Git integration to automate the deployment of the PropWise data pipeline and Streamlit application, with all SQL scripts, Python notebooks, datasets, and application code stored in this GitHub repository , that enables version control and collaborative development through bidirectional synchronization. We created fine-grained personal access tokens with read/write permissions to enable team members to push changes from Snowflake's UI directly back to GitHub, maintaining a single source of truth across development iterations. The deployment workflow utilizes two GitHub Actions—generate-keys.yml for authentication management and snowflake-deploy.yml for automated pipeline execution—that automatically connect to Snowflake and execute SQL scripts in sequence when changes are pushed to the main branch, eliminating manual execution errors. Following a trunk-based version control approach, all team members work on the main branch with frequent commits and descriptive messages, using Snowflake's integrated "Push to Git" feature for notebooks and Streamlit code updates while maintaining the environment.yml file for reproducible package environments. We use ALTER GIT REPOSITORY ... FETCH to pull the latest changes before running SQL scripts, ensuring Snowflake always executes the most current pipeline version, and while automated unit tests were not implemented due to time constraints and can be considered for future improvements, the CI/CD setup provides rapid feedback loops through GitHub Actions logs and Snowsight visibility, allowing quick identification and resolution of issues before they impact model training or user-facing features.
