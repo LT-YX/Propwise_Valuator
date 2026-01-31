@@ -1,0 +1,10 @@
+streamlit
+snowflake-connector-python==3.12.3
+snowflake-snowpark-python
+pandas
+pydeck==0.9.1
+pillow
+scikit-learn==1.7.1
+numpy
+xgboost==2.1.4
+joblib==1.5.3
