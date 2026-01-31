@@ -283,7 +283,7 @@ st.markdown("""
 def load_artifacts_from_file():
     """Load ML bundle from GitHub repo file."""
     try:
-        with gzip.open("resale_price_bundle.pkl.gz", "rb") as gz:
+        with gzip.open("../models/resale_price_bundle.pkl.gz", "rb") as gz:
             artifacts = joblib.load(gz)
         return artifacts
     except Exception as e:
